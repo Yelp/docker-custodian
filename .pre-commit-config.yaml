@@ -1,0 +1,13 @@
+- repo: git://github.com/pre-commit/pre-commit-hooks
+  sha: 'v0.4.2'
+  hooks:
+    - id: check-added-large-files
+    - id: check-docstring-first
+    - id: check-merge-conflict
+    - id: check-yaml
+    - id: debug-statements
+    - id: end-of-file-fixer
+    - id: flake8
+    - id: name-tests-test
+    - id: requirements-txt-fixer
+    - id: trailing-whitespace
