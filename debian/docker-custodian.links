@@ -1,0 +1,2 @@
+usr/share/python/docker-custodian/bin/dcgc usr/bin/dcgc
+usr/share/python/docker-custodian/bin/dcstop usr/bin/dcstop

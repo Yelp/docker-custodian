@@ -1,0 +1,9 @@
+*.py?
+.*.swp
+.tox
+dist
+build/
+*.pyc
+__pycache__
+
+*.egg-info/

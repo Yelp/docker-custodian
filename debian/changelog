@@ -1,0 +1,44 @@
+docker-custodian (0.4.0) lucid; urgency=low
+
+  * Renamed to docker-custodian
+  * Changed defaults of dcgc to not remove anything
+
+ -- Daniel Nephin <dnephin@yelp.com>  Mon, 29 Jun 2015 18:48:22 -0700
+
+docker-custodian (0.3.3) lucid; urgency=low
+
+  * Bug fixes for removing images by Id and with multiple tags
+
+ -- Daniel Nephin <dnephin@yelp.com>  Thu, 04 Jun 2015 13:24:14 -0700
+
+docker-custodian (0.3.2) lucid; urgency=low
+
+  * docker-custodian should now remove image names before trying to remove
+    by id, so that images tagged with more than one name are removed
+    correctly
+
+ -- Daniel Nephin <dnephin@yelp.com>  Tue, 02 Jun 2015 13:26:56 -0700
+
+docker-custodian (0.3.1) lucid; urgency=low
+
+  * Fix broken commands 
+
+ -- Daniel Nephin <dnephin@yelp.com>  Mon, 09 Mar 2015 17:58:03 -0700
+
+docker-custodian (0.3.0) lucid; urgency=low
+
+  * Change age and time options to support pytimeparse formats
+
+ -- Daniel Nephin <dnephin@yelp.com>  Fri, 06 Mar 2015 13:30:36 -0800
+
+docker-custodian (0.2.0) lucid; urgency=low
+
+  * Add docker-autostop
+
+ -- Daniel Nephin <dnephin@yelp.com>  Wed, 28 Jan 2015 15:37:40 -0800
+
+docker-custodian (0.1.0) lucid; urgency=low
+
+  * Initial release
+
+ -- Daniel Nephin <dnephin@yelp.com>  Thu, 02 Oct 2014 11:13:43 -0700

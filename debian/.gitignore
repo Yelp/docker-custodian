@@ -1,0 +1,8 @@
+*
+!.gitignore
+!changelog
+!compat
+!control
+!copyright
+!rules
+!docker-custodian.links
