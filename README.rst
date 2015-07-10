@@ -1,7 +1,7 @@
 Docker Custodian
 ================
 
-Keep docker hosts clean and tidy.
+Keep docker hosts tidy.
 
 
 dcgc

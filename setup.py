@@ -21,7 +21,7 @@ setup(
     provides=['docker_custodian'],
     author='Daniel Nephin',
     author_email='dnephin@yelp.com',
-    description='Keep docker hosts clean and tidy.',
+    description='Keep docker hosts tidy.',
     packages=find_packages(exclude=['tests*']),
     include_package_data=True,
     install_requires=install_requires,
