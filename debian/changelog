@@ -1,3 +1,9 @@
+docker-custodian (0.5.0) lucid; urgency=low
+
+  * Add option to exclude images from removal by dcgc
+
+ -- Daniel Nephin <dnephin@yelp.com>  Tue, 21 Jul 2015 11:14:38 -0700
+
 docker-custodian (0.4.0) lucid; urgency=low
 
   * Renamed to docker-custodian
