@@ -24,6 +24,22 @@ Example:
     dcgc --max-container-age 3days --max-image-age 30days
 
 
+Prevent images from being removed
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``dcgc`` supports an image exclude list. If you have images that you'd like
+to keep around forever you can use the exclude list to prevent them from
+being removed.
+
+    --exclude-image
+        Never remove images with this tag. May be specified more than once.
+
+    --exclude-image-file
+        Path to a file which contains a list of images to exclude, one
+        image tag per line.
+
+
+
 dcstop
 ------
 

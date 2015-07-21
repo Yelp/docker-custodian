@@ -1,3 +1,6 @@
+from six import StringIO
+import textwrap
+
 import docker.errors
 try:
     from unittest import mock
@@ -63,7 +66,7 @@ def test_cleanup_images(mock_client, now):
     ]
     mock_client.inspect_image.side_effect = iter(mock_images)
 
-    docker_gc.cleanup_images(mock_client, max_image_age, False)
+    docker_gc.cleanup_images(mock_client, max_image_age, False, set())
     assert mock_client.remove_image.mock_calls == [
         mock.call(image['Id']) for image in reversed(images)
     ]
@@ -90,7 +93,29 @@ def test_filter_images_in_use():
         dict(RepoTags=['new_image:latest', 'new_image:123']),
     ]
     actual = docker_gc.filter_images_in_use(images, image_tags_in_use)
-    assert actual == expected
+    assert list(actual) == expected
+
+
+def test_filter_excluded_images():
+    exclude_set = set([
+        'user/one:latest',
+        'user/foo:latest',
+        'other:12345',
+    ])
+    images = [
+        dict(RepoTags=['<none>:<none>'], Id='babababababaabababab'),
+        dict(RepoTags=['user/one:latest', 'user/one:abcd']),
+        dict(RepoTags=['other:abcda']),
+        dict(RepoTags=['other:12345']),
+        dict(RepoTags=['new_image:latest', 'new_image:123']),
+    ]
+    expected = [
+        dict(RepoTags=['<none>:<none>'], Id='babababababaabababab'),
+        dict(RepoTags=['other:abcda']),
+        dict(RepoTags=['new_image:latest', 'new_image:123']),
+    ]
+    actual = docker_gc.filter_excluded_images(images, exclude_set)
+    assert list(actual) == expected
 
 
 def test_is_image_old(image, now):
@@ -178,20 +203,20 @@ def days_as_seconds(num):
     return num * 60 * 60 * 24
 
 
-def test_get_opts_with_defaults():
-    opts = docker_gc.get_opts(args=[])
+def test_get_args_with_defaults():
+    opts = docker_gc.get_args(args=[])
     assert opts.timeout == 60
     assert opts.dry_run is False
     assert opts.max_container_age is None
     assert opts.max_image_age is None
 
 
-def test_get_opts_with_args():
+def test_get_args_with_args():
     with mock.patch(
         'docker_custodian.docker_gc.timedelta_type',
         autospec=True
     ) as mock_timedelta_type:
-        opts = docker_gc.get_opts(args=[
+        opts = docker_gc.get_args(args=[
             '--max-image-age', '30 days',
             '--max-container-age', '3d',
         ])
@@ -224,16 +249,46 @@ def test_get_all_images(mock_client):
     mock_log.info.assert_called_with("Found %s images", count)
 
 
+def test_build_exclude_set():
+    image_tags = [
+        'some_image:latest',
+        'repo/foo:12345',
+        'duplicate:latest',
+    ]
+    exclude_image_file = StringIO(textwrap.dedent("""
+        # Exclude this one because
+        duplicate:latest
+        # Also this one
+        repo/bar:abab
+    """))
+    expected = set([
+        'some_image:latest',
+        'repo/foo:12345',
+        'duplicate:latest',
+        'repo/bar:abab',
+    ])
+
+    exclude_set = docker_gc.build_exclude_set(image_tags, exclude_image_file)
+    assert exclude_set == expected
+
+
+def test_build_exclude_set_empty():
+    exclude_set = docker_gc.build_exclude_set(None, None)
+    assert exclude_set == set()
+
+
 def test_main(mock_client):
     with mock.patch(
             'docker_custodian.docker_gc.docker.Client',
             return_value=mock_client):
 
         with mock.patch(
-                'docker_custodian.docker_gc.get_opts',
-                autospec=True) as mock_get_opts:
-            mock_get_opts.return_value = mock.Mock(
+                'docker_custodian.docker_gc.get_args',
+                autospec=True) as mock_get_args:
+            mock_get_args.return_value = mock.Mock(
                 max_image_age=100,
                 max_container_age=200,
+                exclude_image=[],
+                exclude_image_file=None,
             )
             docker_gc.main()

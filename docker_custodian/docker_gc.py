@@ -68,15 +68,26 @@ def get_all_images(client):
     return images
 
 
-def cleanup_images(client, max_image_age, dry_run):
+def cleanup_images(client, max_image_age, dry_run, exclude_set):
     # re-fetch container list so that we don't include removed containers
     image_tags_in_use = set(
         container['Image'] for container in get_all_containers(client))
 
     images = filter_images_in_use(get_all_images(client), image_tags_in_use)
+    images = filter_excluded_images(images, exclude_set)
 
-    for image_summary in reversed(images):
+    for image_summary in reversed(list(images)):
         remove_image(client, image_summary, max_image_age, dry_run)
+
+
+def filter_excluded_images(images, exclude_set):
+    def include_image(image_summary):
+        image_tags = image_summary.get('RepoTags')
+        if no_image_tags(image_tags):
+            return True
+        return not set(image_tags) & exclude_set
+
+    return filter(include_image, images)
 
 
 def filter_images_in_use(images, image_tags_in_use):
@@ -87,10 +98,10 @@ def filter_images_in_use(images, image_tags_in_use):
             return set(['%s:latest' % image_summary['Id'][:12]])
         return set(image_tags)
 
-    def image_is_in_use(image_summary):
+    def image_not_in_use(image_summary):
         return not get_tag_set(image_summary) & image_tags_in_use
 
-    return list(filter(image_is_in_use, images))
+    return filter(image_not_in_use, images)
 
 
 def is_image_old(image, min_date):
@@ -140,22 +151,37 @@ def format_image(image, image_summary):
     return "%s %s" % (image['Id'][:16], get_tags())
 
 
+def build_exclude_set(image_tags, exclude_file):
+    exclude_set = set(image_tags or [])
+
+    def is_image_tag(line):
+        return line and not line.startswith('#')
+
+    if exclude_file:
+        lines = [line.strip() for line in exclude_file.read().split('\n')]
+        exclude_set.update(filter(is_image_tag, lines))
+    return exclude_set
+
+
 def main():
     logging.basicConfig(
         level=logging.INFO,
         format="%(message)s",
         stream=sys.stdout)
 
-    opts = get_opts()
-    client = docker.Client(timeout=opts.timeout)
+    args = get_args()
+    client = docker.Client(timeout=args.timeout)
 
-    if opts.max_container_age:
-        cleanup_containers(client, opts.max_container_age, opts.dry_run)
-    if opts.max_image_age:
-        cleanup_images(client, opts.max_image_age, opts.dry_run)
+    if args.max_container_age:
+        cleanup_containers(client, args.max_container_age, args.dry_run)
+    if args.max_image_age:
+        exclude_set = build_exclude_set(
+            args.exclude_image,
+            args.exclude_image_file)
+        cleanup_images(client, args.max_image_age, args.dry_run, exclude_set)
 
 
-def get_opts(args=None):
+def get_args(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--max-container-age',
@@ -175,6 +201,16 @@ def get_opts(args=None):
     parser.add_argument(
         '-t', '--timeout', type=int, default=60,
         help="HTTP timeout in seconds for making docker API calls.")
+    parser.add_argument(
+        '--exclude-image',
+        action='append',
+        help="Never remove images with this tag.")
+    parser.add_argument(
+        '--exclude-image-file',
+        type=argparse.FileType('r'),
+        help="Path to a file which contains a list of images to exclude, one "
+             "image tag per line.")
+
     return parser.parse_args(args=args)
 
 
