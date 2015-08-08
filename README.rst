@@ -7,6 +7,11 @@ Docker Custodian
 Keep docker hosts tidy.
 
 
+.. contents::
+    :backlinks: none
+
+
+
 dcgc
 ----
 
@@ -21,6 +26,8 @@ Maximum age can be specificied with any format supported by
 
 Example:
 
+.. code:: sh
+
     dcgc --max-container-age 3days --max-image-age 30days
 
 
@@ -30,6 +37,8 @@ Prevent images from being removed
 ``dcgc`` supports an image exclude list. If you have images that you'd like
 to keep around forever you can use the exclude list to prevent them from
 being removed.
+
+::
 
     --exclude-image
         Never remove images with this tag. May be specified more than once.
@@ -50,5 +59,7 @@ with `--prefix` and it has been running for longer than `--max-run-time`.
 
 
 Example:
+
+.. code:: sh
 
     dcstop --max-run-time 2days --prefix "projectprefix_"
