@@ -21,7 +21,9 @@ Container
 .. code::
 
     docker pull dnephin/docker-custodian
-    docker run -ti dnephin/docker-custodian dcgc --help
+    docker run -ti \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        dnephin/docker-custodian dcgc --help
 
 Debian/Ubuntu package
 ~~~~~~~~~~~~~~~~~~~~~
