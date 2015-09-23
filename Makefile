@@ -1,6 +1,9 @@
 .PHONY: all clean tag test
 
-PACKAGE_VERSION=$(shell python setup.py --version)
+PACKAGE_VERSION = $(shell python setup.py --version)
+
+DOCKER_REPO ?= ${USER}
+BUILD_TAG ?= ${PACKAGE_VERSION}
 
 all: test
 
@@ -16,3 +19,8 @@ test:
 	tox
 
 tests: test
+
+
+.PHONY: build
+build:
+	docker build -t ${DOCKER_REPO}/docker-custodian:${BUILD_TAG} .

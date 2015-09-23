@@ -10,6 +10,43 @@ Keep docker hosts tidy.
 .. contents::
     :backlinks: none
 
+Install
+-------
+
+There are three installation options
+
+Container
+~~~~~~~~~
+
+.. code::
+
+    docker pull dnephin/docker-custodian
+    docker run -ti \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        dnephin/docker-custodian dcgc --help
+
+Debian/Ubuntu package
+~~~~~~~~~~~~~~~~~~~~~
+
+First build the package (requires `dh-virtualenv`)
+
+.. code:: sh
+
+    dpkg-buildpackage -us -uc
+
+Then install it
+
+.. code:: sh
+
+    dpkg -i ../docker-custodian_*.deb
+
+
+Source
+~~~~~~
+
+.. code:: sh
+
+    pip install git+https://github.com/Yelp/docker-custodian.git
 
 
 dcgc
