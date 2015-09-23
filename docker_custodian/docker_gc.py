@@ -170,7 +170,7 @@ def main():
         stream=sys.stdout)
 
     args = get_args()
-    client = docker.Client(timeout=args.timeout)
+    client = docker.Client(version='auto', timeout=args.timeout)
 
     if args.max_container_age:
         cleanup_containers(client, args.max_container_age, args.dry_run)
