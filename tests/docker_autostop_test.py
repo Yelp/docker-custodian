@@ -53,7 +53,9 @@ def test_has_been_running_since_false(container, earlier_time):
             autospec=True)
 @mock.patch('docker_custodian.docker_autostop.get_opts',
             autospec=True)
-def test_main(mock_get_opts, mock_stop_containers, mock_build_matcher):
+@mock.patch('docker_custodian.docker_autostop.docker', autospec=True)
+def test_main(mock_docker, mock_get_opts, mock_stop_containers, mock_build_matcher):
+    mock_get_opts.return_value.timeout = 30
     main()
     mock_get_opts.assert_called_once_with()
     mock_build_matcher.assert_called_once_with(
