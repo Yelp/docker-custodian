@@ -20,10 +20,10 @@ Container
 
 .. code::
 
-    docker pull dnephin/docker-custodian
+    docker pull yelp/docker-custodian
     docker run -ti \
         -v /var/run/docker.sock:/var/run/docker.sock \
-        dnephin/docker-custodian dcgc --help
+        yelp/docker-custodian dcgc --help
 
 Debian/Ubuntu package
 ~~~~~~~~~~~~~~~~~~~~~

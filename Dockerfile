@@ -1,6 +1,5 @@
-
 FROM    alpine:3.2
-MAINTAINER  Daniel Nephin <dnephin@gmail.com>
+MAINTAINER Kyle Anderson <kwa@yelp.com>
 
 RUN     apk add -U python py-pip
 ADD     requirements.txt /code/requirements.txt
