@@ -5,7 +5,7 @@ from pytimeparse import timeparse
 
 
 def timedelta_type(value):
-    """Retrun the :class:`datetime.datetime.DateTime` for a time in the past.
+    """Return the :class:`datetime.datetime.DateTime` for a time in the past.
 
     :param value: a string containing a time format supported by :mod:`pytimeparse`
     """
