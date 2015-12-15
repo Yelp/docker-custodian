@@ -26,7 +26,8 @@ def cleanup_containers(client, max_container_age, dry_run):
 
     for container_summary in reversed(all_containers):
         container = api_call(client.inspect_container, container_summary['Id'])
-        if not container or not is_container_old(container, max_container_age):
+        if not container or not should_remove_container(container,
+                                                        max_container_age):
             continue
 
         log.info("Removing container %s %s %s" % (
@@ -38,24 +39,26 @@ def cleanup_containers(client, max_container_age, dry_run):
             api_call(client.remove_container, container['Id'])
 
 
-def is_container_old(container, min_date):
+def should_remove_container(container, min_date):
     state = container.get('State', {})
+
     if state.get('Running'):
         return False
 
     if state.get('Ghost'):
         return True
 
-    # Container was created, but never used
-    if (state.get('FinishedAt') == YEAR_ZERO and
-            dateutil.parser.parse(container['Created']) < min_date):
-        return True
+    # Container was created, but never started
+    if state.get('FinishedAt') == YEAR_ZERO:
+        created_date = dateutil.parser.parse(container['Created'])
+        return created_date < min_date
 
-    return dateutil.parser.parse(state['FinishedAt']) < min_date
+    finished_date = dateutil.parser.parse(state['FinishedAt'])
+    return finished_date < min_date
 
 
 def get_all_containers(client):
-    log.info("Getting all continers")
+    log.info("Getting all containers")
     containers = client.containers(all=True)
     log.info("Found %s containers", len(containers))
     return containers
@@ -174,6 +177,7 @@ def main():
 
     if args.max_container_age:
         cleanup_containers(client, args.max_container_age, args.dry_run)
+
     if args.max_image_age:
         exclude_set = build_exclude_set(
             args.exclude_image,
