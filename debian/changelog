@@ -1,3 +1,9 @@
+docker-custodian (0.5.2) lucid; urgency=low
+
+  * Fixed bug where never started containers that are not old were getting removed 
+
+ -- Semir Patel <spatel@yelp.com>  Tue, 15 Dec 2015 09:44:26 -0800
+
 docker-custodian (0.5.0) lucid; urgency=low
 
   * Add option to exclude images from removal by dcgc
