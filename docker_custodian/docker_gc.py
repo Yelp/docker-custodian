@@ -21,14 +21,13 @@ log = logging.getLogger(__name__)
 YEAR_ZERO = "0001-01-01T00:00:00Z"
 
 
-def cleanup_containers(client, max_container_age, min_container_age, dry_run):
+def cleanup_containers(client, max_container_age, dry_run):
     all_containers = get_all_containers(client)
 
     for container_summary in reversed(all_containers):
         container = api_call(client.inspect_container, container_summary['Id'])
         if not container or not should_remove_container(container,
-                                                        max_container_age,
-                                                        min_container_age):
+                                                        max_container_age):
             continue
 
         log.info("Removing container %s %s %s" % (
@@ -40,25 +39,22 @@ def cleanup_containers(client, max_container_age, min_container_age, dry_run):
             api_call(client.remove_container, container['Id'])
 
 
-def should_remove_container(container, min_date, max_date=None):
+def should_remove_container(container, min_date):
     state = container.get('State', {})
+
     if state.get('Running'):
         return False
 
     if state.get('Ghost'):
         return True
 
-    created_date = dateutil.parser.parse(container['Created'])
+    # Container was created, but never started
+    if state.get('FinishedAt') == YEAR_ZERO:
+        created_date = dateutil.parser.parse(container['Created'])
+        return created_date < min_date
 
-    # Don't delete recently created containers
-    if max_date and created_date > max_date:
-        return False
-
-    # Container was created, but never used
-    if state.get('FinishedAt') == YEAR_ZERO and created_date < min_date:
-        return True
-
-    return dateutil.parser.parse(state['FinishedAt']) < min_date
+    finished_date = dateutil.parser.parse(state['FinishedAt'])
+    return finished_date < min_date
 
 
 def get_all_containers(client):
@@ -180,8 +176,8 @@ def main():
     client = docker.Client(version='auto', timeout=args.timeout)
 
     if args.max_container_age:
-        cleanup_containers(client, args.max_container_age,
-                           args.min_container_age, args.dry_run)
+        cleanup_containers(client, args.max_container_age, args.dry_run)
+
     if args.max_image_age:
         exclude_set = build_exclude_set(
             args.exclude_image,
@@ -197,12 +193,6 @@ def get_args(args=None):
         help="Maximum age for a container. Containers older than this age "
              "will be removed. Age can be specified in any pytimeparse "
              "supported format.")
-    parser.add_argument(
-        '--min-container-age',
-        type=timedelta_type,
-        help="Minimum age for a container when --max-container-age is used. "
-             "Containers younger than this age will not be removed. Age can "
-             "be specified in any pytimeparse supported format.")
     parser.add_argument(
         '--max-image-age',
         type=timedelta_type,

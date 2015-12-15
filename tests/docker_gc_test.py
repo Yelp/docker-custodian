@@ -21,9 +21,15 @@ class TestShouldRemoveContainer(object):
         container['State']['Ghost'] = True
         assert docker_gc.should_remove_container(container, now)
 
-    def test_old_never_run(self, container, now):
+    def test_old_never_run(self, container, now, earlier_time):
+        container['Created'] = str(earlier_time)
         container['State']['FinishedAt'] = docker_gc.YEAR_ZERO
         assert docker_gc.should_remove_container(container, now)
+
+    def test_not_old_never_run(self, container, now, earlier_time):
+        container['Created'] = str(now)
+        container['State']['FinishedAt'] = docker_gc.YEAR_ZERO
+        assert not docker_gc.should_remove_container(container, now)
 
     def test_old_stopped(self, container, now):
         assert docker_gc.should_remove_container(container, now)
@@ -31,16 +37,6 @@ class TestShouldRemoveContainer(object):
     def test_not_old(self, container, now):
         container['State']['FinishedAt'] = '2014-01-21T00:00:00Z'
         assert not docker_gc.should_remove_container(container, now)
-
-    def test_recently_created(self, container, now, earlier_time, later_time):
-        container['Created'] = str(later_time)
-        assert not docker_gc.should_remove_container(container, earlier_time,
-                                                     now)
-
-    def test_not_recently_created(self, container, now, earlier_time,
-                                  later_time):
-        container['Created'] = str(earlier_time)
-        assert docker_gc.should_remove_container(container, now, later_time)
 
 
 def test_cleanup_containers(mock_client, now):
@@ -53,16 +49,14 @@ def test_cleanup_containers(mock_client, now):
         dict(
             Id='abcd',
             Name='one',
-            Created=str(now),
             State=dict(Running=False, FinishedAt='2014-01-01T01:01:01Z')),
         dict(
             Id='abbb',
             Name='two',
-            Created=str(now),
             State=dict(Running=True, FinishedAt='2014-01-01T01:01:01Z'))
     ]
     mock_client.inspect_container.side_effect = iter(mock_containers)
-    docker_gc.cleanup_containers(mock_client, max_container_age, None, False)
+    docker_gc.cleanup_containers(mock_client, max_container_age, False)
     mock_client.remove_container.assert_called_once_with('abcd')
 
 
