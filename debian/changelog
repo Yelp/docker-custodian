@@ -1,3 +1,9 @@
+docker-custodian (0.5.3) lucid; urgency=low
+
+  * Update docker-py
+
+ -- Alex Dudko <adudko@yelp.com>  Mon, 4 Apr 2016 09:44:26 -0800
+
 docker-custodian (0.5.2) lucid; urgency=low
 
   * Fixed bug where never started containers that are not old were getting removed 
