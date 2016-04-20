@@ -42,18 +42,26 @@ class TestShouldRemoveContainer(object):
 def test_cleanup_containers(mock_client, now):
     max_container_age = now
     mock_client.containers.return_value = [
-        dict(Id='abcd'),
-        dict(Id='abbb'),
+        {'Id': 'abcd'},
+        {'Id': 'abbb'},
     ]
     mock_containers = [
-        dict(
-            Id='abcd',
-            Name='one',
-            State=dict(Running=False, FinishedAt='2014-01-01T01:01:01Z')),
-        dict(
-            Id='abbb',
-            Name='two',
-            State=dict(Running=True, FinishedAt='2014-01-01T01:01:01Z'))
+        {
+            'Id': 'abcd',
+            'Name': 'one',
+            'State': {
+                'Running': False,
+                'FinishedAt': '2014-01-01T01:01:01Z'
+            }
+        },
+        {
+            'Id': 'abbb',
+            'Name': 'two',
+            'State': {
+                'Running': True,
+                'FinishedAt': '2014-01-01T01:01:01Z'
+            }
+        }
     ]
     mock_client.inspect_container.side_effect = iter(mock_containers)
     docker_gc.cleanup_containers(mock_client, max_container_age, False)
@@ -63,12 +71,18 @@ def test_cleanup_containers(mock_client, now):
 def test_cleanup_images(mock_client, now):
     max_image_age = now
     mock_client.images.return_value = images = [
-        dict(Id='abcd'),
-        dict(Id='abbb'),
+        {'Id': 'abcd'},
+        {'Id': 'abbb'},
     ]
     mock_images = [
-        dict(Id='abcd', Created='2014-01-01T01:01:01Z'),
-        dict(Id='abbb', Created='2014-01-01T01:01:01Z'),
+        {
+            'Id': 'abcd',
+            'Created': '2014-01-01T01:01:01Z'
+        },
+        {
+            'Id': 'abbb',
+            'Created': '2014-01-01T01:01:01Z'
+        },
     ]
     mock_client.inspect_image.side_effect = iter(mock_images)
 
@@ -86,17 +100,38 @@ def test_filter_images_in_use():
         '2471708c19be:latest',
     ])
     images = [
-        dict(RepoTags=['<none>:<none>'], Id='2471708c19beabababab'),
-        dict(RepoTags=['<none>:<none>'], Id='babababababaabababab'),
-        dict(RepoTags=['user/one:latest', 'user/one:abcd']),
-        dict(RepoTags=['other:abcda']),
-        dict(RepoTags=['other:12345']),
-        dict(RepoTags=['new_image:latest', 'new_image:123']),
+        {
+            'RepoTags': ['<none>:<none>'],
+            'Id': '2471708c19beabababab'
+        },
+        {
+            'RepoTags': ['<none>:<none>'],
+            'Id': 'babababababaabababab'
+        },
+        {
+            'RepoTags': ['user/one:latest', 'user/one:abcd']
+        },
+        {
+            'RepoTags': ['other:abcda']
+        },
+        {
+            'RepoTags': ['other:12345']
+        },
+        {
+            'RepoTags': ['new_image:latest', 'new_image:123']
+        },
     ]
     expected = [
-        dict(RepoTags=['<none>:<none>'], Id='babababababaabababab'),
-        dict(RepoTags=['other:abcda']),
-        dict(RepoTags=['new_image:latest', 'new_image:123']),
+        {
+            'RepoTags': ['<none>:<none>'],
+            'Id': 'babababababaabababab'
+        },
+        {
+            'RepoTags': ['other:abcda']
+        },
+        {
+            'RepoTags': ['new_image:latest', 'new_image:123']
+        },
     ]
     actual = docker_gc.filter_images_in_use(images, image_tags_in_use)
     assert list(actual) == expected
@@ -109,16 +144,34 @@ def test_filter_excluded_images():
         'other:12345',
     ])
     images = [
-        dict(RepoTags=['<none>:<none>'], Id='babababababaabababab'),
-        dict(RepoTags=['user/one:latest', 'user/one:abcd']),
-        dict(RepoTags=['other:abcda']),
-        dict(RepoTags=['other:12345']),
-        dict(RepoTags=['new_image:latest', 'new_image:123']),
+            {
+                'RepoTags': ['<none>:<none>'],
+                'Id': 'babababababaabababab'
+            },
+            {
+                'RepoTags': ['user/one:latest', 'user/one:abcd']
+            },
+            {
+                'RepoTags': ['other:abcda']
+            },
+            {
+                'RepoTags': ['other:12345']
+            },
+            {
+                'RepoTags': ['new_image:latest', 'new_image:123']
+            },
     ]
     expected = [
-        dict(RepoTags=['<none>:<none>'], Id='babababababaabababab'),
-        dict(RepoTags=['other:abcda']),
-        dict(RepoTags=['new_image:latest', 'new_image:123']),
+            {
+                'RepoTags': ['<none>:<none>'],
+                'Id': 'babababababaabababab'
+            },
+            {
+                'RepoTags': ['other:abcda']
+            },
+            {
+                'RepoTags': ['new_image:latest', 'new_image:123']
+            },
     ]
     actual = docker_gc.filter_excluded_images(images, exclude_set)
     assert list(actual) == expected
@@ -134,7 +187,7 @@ def test_is_image_old_false(image, later_time):
 
 def test_remove_image_no_tags(mock_client, image, now):
     image_id = 'abcd'
-    image_summary = dict(Id=image_id)
+    image_summary = {'Id': image_id}
     mock_client.inspect_image.return_value = image
     docker_gc.remove_image(mock_client, image_summary, now, False)
 
@@ -143,7 +196,7 @@ def test_remove_image_no_tags(mock_client, image, now):
 
 def test_remove_image_new_image_not_removed(mock_client, image, later_time):
     image_id = 'abcd'
-    image_summary = dict(Id=image_id)
+    image_summary = {'Id': image_id}
     mock_client.inspect_image.return_value = image
     docker_gc.remove_image(mock_client, image_summary, later_time, False)
 
@@ -153,7 +206,10 @@ def test_remove_image_new_image_not_removed(mock_client, image, later_time):
 def test_remove_image_with_tags(mock_client, image, now):
     image_id = 'abcd'
     repo_tags = ['user/one:latest', 'user/one:12345']
-    image_summary = dict(Id=image_id, RepoTags=repo_tags)
+    image_summary = {
+            'Id': image_id,
+            'RepoTags': repo_tags
+    }
     mock_client.inspect_image.return_value = image
     docker_gc.remove_image(mock_client, image_summary, now, False)
 
