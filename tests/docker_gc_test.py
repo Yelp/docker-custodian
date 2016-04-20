@@ -182,7 +182,9 @@ def test_api_call_with_timeout():
         docker_gc.api_call(func, id)
 
     func.assert_called_once_with(id)
-    mock_log.warn.assert_called_once_with('Failed to call remove_image abcd msg')
+    mock_log.warn.assert_called_once_with(
+        'Failed to call remove_image abcd msg'
+    )
 
 
 def test_api_call_with_api_error():
