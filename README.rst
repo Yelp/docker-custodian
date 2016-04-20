@@ -46,7 +46,7 @@ Source
 
 .. code:: sh
 
-    pip install git+https://github.com/Yelp/docker-custodian.git
+    pip install git+https://github.com/Yelp/docker-custodian.git#egg=docker_custodian
 
 
 dcgc
