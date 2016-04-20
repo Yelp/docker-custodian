@@ -1,18 +1,6 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup, find_packages
-import sys
-
 from docker_custodian.__about__ import __version__
-
-
-install_requires = [
-    'python-dateutil',
-    'docker-py >= 0.5',
-    'pytimeparse',
-]
-
-if sys.version_info < (2, 7):
-    install_requires.append('argparse')
 
 
 setup(
@@ -24,7 +12,11 @@ setup(
     description='Keep docker hosts tidy.',
     packages=find_packages(exclude=['tests*']),
     include_package_data=True,
-    install_requires=install_requires,
+    install_requires=[
+        'python-dateutil',
+        'docker-py >= 0.5',
+        'pytimeparse',
+    ],
     license="Apache License 2.0",
     entry_points={
         'console_scripts': [
