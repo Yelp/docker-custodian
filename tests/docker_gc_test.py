@@ -57,7 +57,7 @@ def test_cleanup_containers(mock_client, now):
     ]
     mock_client.inspect_container.side_effect = iter(mock_containers)
     docker_gc.cleanup_containers(mock_client, max_container_age, False)
-    mock_client.remove_container.assert_called_once_with('abcd')
+    mock_client.remove_container.assert_called_once_with(container='abcd', v=True)
 
 
 def test_cleanup_images(mock_client, now):
@@ -74,7 +74,7 @@ def test_cleanup_images(mock_client, now):
 
     docker_gc.cleanup_images(mock_client, max_image_age, False, set())
     assert mock_client.remove_image.mock_calls == [
-        mock.call(image['Id']) for image in reversed(images)
+        mock.call(image=image['Id']) for image in reversed(images)
     ]
 
 
@@ -138,7 +138,7 @@ def test_remove_image_no_tags(mock_client, image, now):
     mock_client.inspect_image.return_value = image
     docker_gc.remove_image(mock_client, image_summary, now, False)
 
-    mock_client.remove_image.assert_called_once_with(image_id)
+    mock_client.remove_image.assert_called_once_with(image=image_id)
 
 
 def test_remove_image_new_image_not_removed(mock_client, image, later_time):
@@ -158,15 +158,15 @@ def test_remove_image_with_tags(mock_client, image, now):
     docker_gc.remove_image(mock_client, image_summary, now, False)
 
     assert mock_client.remove_image.mock_calls == [
-        mock.call(tag) for tag in repo_tags
+        mock.call(image=tag) for tag in repo_tags
     ]
 
 
 def test_api_call_success():
     func = mock.Mock()
-    id = "abcd"
-    result = docker_gc.api_call(func, id)
-    func.assert_called_once_with(id)
+    container = "abcd"
+    result = docker_gc.api_call(func, container=container)
+    func.assert_called_once_with(container="abcd")
     assert result == func.return_value
 
 
@@ -174,15 +174,16 @@ def test_api_call_with_timeout():
     func = mock.Mock(
         side_effect=requests.exceptions.ReadTimeout("msg"),
         __name__="remove_image")
-    id = "abcd"
+    image = "abcd"
 
     with mock.patch(
             'docker_custodian.docker_gc.log',
             autospec=True) as mock_log:
-        docker_gc.api_call(func, id)
+        docker_gc.api_call(func, image=image)
 
-    func.assert_called_once_with(id)
-    mock_log.warn.assert_called_once_with('Failed to call remove_image abcd msg')
+    func.assert_called_once_with(image="abcd")
+    mock_log.warn.assert_called_once_with('Failed to call remove_image '
+                                          'image=abcd msg')
 
 
 def test_api_call_with_api_error():
@@ -192,16 +193,16 @@ def test_api_call_with_api_error():
             mock.Mock(status_code=409, reason="Conflict"),
             explanation="failed"),
         __name__="remove_image")
-    id = "abcd"
+    image = "abcd"
 
     with mock.patch(
             'docker_custodian.docker_gc.log',
             autospec=True) as mock_log:
-        docker_gc.api_call(func, id)
+        docker_gc.api_call(func, image=image)
 
-    func.assert_called_once_with(id)
+    func.assert_called_once_with(image="abcd")
     mock_log.warn.assert_called_once_with(
-        'Error calling remove_image abcd '
+        'Error calling remove_image image=abcd '
         '409 Client Error: Conflict ("failed")')
 
 
