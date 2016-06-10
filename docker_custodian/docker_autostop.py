@@ -77,18 +77,22 @@ def get_opts(args=None):
     parser.add_argument(
         '--max-run-time',
         type=timedelta_type,
-        help="Maximum time a container is allows to run. Time may be specified "
-        "in any pytimeparse supported format.")
+        help="Maximum time a container is allows to run. Time may "
+        "be specified in any pytimeparse supported format."
+    )
     parser.add_argument(
         '--prefix', action="append", default=[],
         help="Only stop containers which match one of the "
-             "prefix.")
+             "prefix."
+    )
     parser.add_argument(
         '--dry-run', action="store_true",
-        help="Only log actions, don't stop anything.")
+        help="Only log actions, don't stop anything."
+    )
     parser.add_argument(
         '-t', '--timeout', type=int, default=60,
-        help="HTTP timeout in seconds for making docker API calls.")
+        help="HTTP timeout in seconds for making docker API calls."
+    )
     opts = parser.parse_args(args=args)
 
     if not opts.prefix:

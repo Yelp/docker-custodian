@@ -37,7 +37,9 @@ def cleanup_containers(client, max_container_age, dry_run):
             container['State']['FinishedAt']))
 
         if not dry_run:
-            api_call(client.remove_container, container=container['Id'], v=True)
+            api_call(client.remove_container,
+                     container=container['Id'],
+                     v=True)
 
 
 def should_remove_container(container, min_date):

@@ -7,7 +7,7 @@ export DH_OPTIONS
 	dh $@ --with python-virtualenv
 
 override_dh_virtualenv:
-	dh_virtualenv
+	dh_virtualenv --python python2.7
 
 # do not call `make clean` as part of packaging
 override_dh_auto_clean:
