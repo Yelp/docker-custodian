@@ -25,7 +25,8 @@ def cleanup_containers(client, max_container_age, dry_run):
     all_containers = get_all_containers(client)
 
     for container_summary in reversed(all_containers):
-        container = api_call(client.inspect_container, container_summary['Id'])
+        container = api_call(client.inspect_container,
+                             container=container_summary['Id'])
         if not container or not should_remove_container(container,
                                                         max_container_age):
             continue
@@ -36,7 +37,9 @@ def cleanup_containers(client, max_container_age, dry_run):
             container['State']['FinishedAt']))
 
         if not dry_run:
-            api_call(client.remove_container, container['Id'])
+            api_call(client.remove_container,
+                     container=container['Id'],
+                     v=True)
 
 
 def should_remove_container(container, min_date):
@@ -116,7 +119,7 @@ def no_image_tags(image_tags):
 
 
 def remove_image(client, image_summary, min_date, dry_run):
-    image = api_call(client.inspect_image, image_summary['Id'])
+    image = api_call(client.inspect_image, image=image_summary['Id'])
     if not image or not is_image_old(image, min_date):
         return
 
@@ -127,21 +130,23 @@ def remove_image(client, image_summary, min_date, dry_run):
     image_tags = image_summary.get('RepoTags')
     # If there are no tags, remove the id
     if no_image_tags(image_tags):
-        api_call(client.remove_image, image_summary['Id'])
+        api_call(client.remove_image, image=image_summary['Id'])
         return
 
     # Remove any repository tags so we don't hit 409 Conflict
     for image_tag in image_tags:
-        api_call(client.remove_image, image_tag)
+        api_call(client.remove_image, image=image_tag)
 
 
-def api_call(func, id):
+def api_call(func, **kwargs):
     try:
-        return func(id)
+        return func(**kwargs)
     except requests.exceptions.Timeout as e:
-        log.warn("Failed to call %s %s %s" % (func.__name__, id, e))
+        params = ','.join(['%s=%s' % (k, v) for k, v in kwargs.items()])
+        log.warn("Failed to call %s %s %s" % (func.__name__, params, e))
     except docker.errors.APIError as ae:
-        log.warn("Error calling %s %s %s" % (func.__name__, id, ae))
+        params = ','.join(['%s=%s' % (k, v) for k, v in kwargs.items()])
+        log.warn("Error calling %s %s %s" % (func.__name__, params, ae))
 
 
 def format_image(image, image_summary):
