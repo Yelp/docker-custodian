@@ -18,4 +18,4 @@ override_dh_auto_build:
 	true
 
 override_dh_auto_test:
-	tox -e py27
+	true
