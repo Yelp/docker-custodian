@@ -7,3 +7,8 @@ install:
 - pip install tox
 script:
 - tox
+
+# we need docker to be running
+sudo: required
+services:
+  - docker
