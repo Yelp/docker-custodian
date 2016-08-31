@@ -12,8 +12,8 @@ deploy:
   - provider: pypi
     user: yelplabs
     password:
-      secure: r9zzkDhFF/aMhId26nVuyk91t0uMLFd80ZWIXpOdGL36AvOKTj90l2Usb9ipxJeIBdiccQ5rFtX7r2RnFC9Q3cP83A0c5p1jacpb7OyNRVDaYqr/+iDVp83SQKF9l2PnKyIXeLpIbVi6x7s0L+gJ7Ex+6ck0X9V1MA1zFtFxOyhGRAPxjPhywLAIsWd7RdclD/Bg79YtZ9pZGg0QK0hm9S3RZL+e2kdM+9rNpfhmyI6Bcf6ZBMoJtsCWWRRg8JgI/StfrXs1VpJfjWmy+XApsOWTWWfjdLO3IpuDhQrAfrCwM8n7AHv8MCfxt8yPlRKA4OEg2TGOm7U+VSIubV64hgFdSt7fazYh+uttUxGE8cz8Jt/rRCYmrYmWPzm7MIoFOwBfrK7QEQDxSN9gWUbL3eWgPGQMVZC06hb0pdLog/8piNrC5DBwywlPy24ChVlt+0UMA8rzIepwX1//Bcc4a9lIxbLFg8P/1JtS7Tkfag9p2Y1Z943GU1JAHhPLktdxMxFlZ4qTfaaxz7fYU+Kr/47noNLWKtnNejVEgy4bYAR9NxDET/vnpeJ7MacefYL0zvXBWO6MCbVDCUbM8fQWrZUAjeFzMCk8kXgA1qkkQ0Lm/7ACbUUECiZ1qclZh2du6Cvt6xRsBJXDXjzYwm2ECKGS8GQ4pJ6h3DypdHgHrMM=
+      secure: R3TcB5uz56Pu3qRAb0X1/uLQ/hCzNEi1MEAxDxNbwCfKbDZ1s/IxcjeQa4m5W8JgxBNEfa/ygbcV7UKe4wKHnuuXIve4XSd0Slde+cEY1awOFzgbeaxhnu8a1Z6lFXfOriq1fDKX3fGLvxKhoR0uonvRQO0Hx3oZWPMeT8XnoqkPTiAXkGdDhbnQbgFj5fxOq6Fd/InIkWnTSScCjHxaf4FJZISumGCAFF7PBWHOJhkYCVx/CoMK2h2Ch8rqbiVQUIYDiDrDeXkoXYXjCnoGZ1xjLqBS7TLkZgC0Ic8XZwcGdmQvUroOXnGRvs+P7J8clhO4hhEawoSAzcWcSeHBlm+45iW+s1wXD+yJ5BzZpXZHG5BlU8tPnpbY/MV8+2aYq/EPzcGbc6FR9dYyBw2Elja9pFBYzh6ZZqMuH47g12PHs95GakZ31SvqOmWG91KMKBOFDEnwrMd4Vwfn94wuMACf8y8oinO+Irvu2/FYyJ5+KIEjJwkDAEcSE4SJWCoFqcQaiSJizgJh85TIytJq39PJtHc3eax7+/uTcAqBnS+g9iGcsWSelzMJhPfUPch37jWPurDibwR6ui4S8+zpwB7LIGrzarcuqUXZmAaWrxNhCIasmcsmBbfq2YYHuV0DMRKRhhN+urRxkk8luMOQmUR7isb3YZ2b18HZGkNEEec=
     on:
       tags: true
-      condition: $TOXENV == py27
+      condition: "$TOXENV == py27"
       repo: Yelp/docker-custodian
