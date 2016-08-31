@@ -1,3 +1,9 @@
+docker-custodian (0.6.1) lucid; urgency=low
+
+  * New release for pypi 
+
+ -- kwa <kwa@kwa-MacBookPro>  Wed, 31 Aug 2016 09:49:37 -0700
+
 docker-custodian (0.6.0) lucid; urgency=low
 
   * Remove python 2.6 support
