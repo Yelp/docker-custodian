@@ -4,6 +4,7 @@ Remove old docker containers and images that are no longer in use.
 
 """
 import argparse
+import fnmatch
 import logging
 import sys
 
@@ -88,7 +89,10 @@ def filter_excluded_images(images, exclude_set):
         image_tags = image_summary.get('RepoTags')
         if no_image_tags(image_tags):
             return True
-        return not set(image_tags) & exclude_set
+        for exclude_pattern in exclude_set:
+            if fnmatch.filter(image_tags, exclude_pattern):
+                return False
+        return True
 
     return filter(include_image, images)
 

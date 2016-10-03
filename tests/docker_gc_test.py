@@ -177,6 +177,47 @@ def test_filter_excluded_images():
     assert list(actual) == expected
 
 
+def test_filter_excluded_images_advanced():
+    exclude_set = set([
+        'user/one:*',
+        'user/foo:tag*',
+        'user/repo-*:tag',
+    ])
+    images = [
+            {
+                'RepoTags': ['<none>:<none>'],
+                'Id': 'babababababaabababab'
+            },
+            {
+                'RepoTags': ['user/one:latest', 'user/one:abcd']
+            },
+            {
+                'RepoTags': ['user/foo:test']
+            },
+            {
+                'RepoTags': ['user/foo:tag123']
+            },
+            {
+                'RepoTags': ['user/repo-1:tag']
+            },
+            {
+                'RepoTags': ['user/repo-2:tag']
+            },
+
+    ]
+    expected = [
+            {
+                'RepoTags': ['<none>:<none>'],
+                'Id': 'babababababaabababab'
+            },
+            {
+                'RepoTags': ['user/foo:test'],
+            },
+    ]
+    actual = docker_gc.filter_excluded_images(images, exclude_set)
+    assert list(actual) == expected
+
+
 def test_is_image_old(image, now):
     assert docker_gc.is_image_old(image, now)
 
