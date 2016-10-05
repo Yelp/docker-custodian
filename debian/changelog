@@ -1,3 +1,9 @@
+docker-custodian (0.7.0) lucid; urgency=low
+
+  * Delete volumes along with containers
+
+ -- Paul O'Connor <poc@yelp.com>  Wed, 05 Oct 2016 00:58:10 -0700
+
 docker-custodian (0.6.1) lucid; urgency=low
 
   * New release for pypi 
