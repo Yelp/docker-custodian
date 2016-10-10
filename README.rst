@@ -84,7 +84,13 @@ being removed.
         Path to a file which contains a list of images to exclude, one
         image tag per line.
 
+You also can use basic pattern matching to exclude images with generic tags.
 
+.. code::
+
+    user/repositoryA:*
+    user/repositoryB:?.?
+    user/repositoryC-*:tag
 
 dcstop
 ------
