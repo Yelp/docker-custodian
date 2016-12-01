@@ -93,6 +93,32 @@ def test_cleanup_images(mock_client, now):
     ]
 
 
+def test_cleanup_volumes(mock_client):
+    mock_client.volumes.return_value = volumes = {
+        'Volumes': [
+            {
+                'Mountpoint': 'unused',
+                'Labels': None,
+                'Driver': 'unused',
+                'Name': u'one'
+            },
+            {
+                'Mountpoint': 'unused',
+                'Labels': None,
+                'Driver': 'unused',
+                'Name': u'two'
+            },
+        ],
+        'Warnings': None,
+    }
+
+    docker_gc.cleanup_volumes(mock_client, False)
+    assert mock_client.remove_volume.mock_calls == [
+        mock.call(name=volume['Name'])
+        for volume in reversed(volumes['Volumes'])
+    ]
+
+
 def test_filter_images_in_use():
     image_tags_in_use = set([
         'user/one:latest',
@@ -353,6 +379,18 @@ def test_get_all_images(mock_client):
         images = docker_gc.get_all_images(mock_client)
     assert images == mock_client.images.return_value
     mock_log.info.assert_called_with("Found %s images", count)
+
+
+def test_get_dangling_volumes(mock_client):
+    count = 4
+    mock_client.volumes.return_value = {
+        'Volumes': [mock.Mock() for _ in range(count)]
+    }
+    with mock.patch('docker_custodian.docker_gc.log',
+                    autospec=True) as mock_log:
+        volumes = docker_gc.get_dangling_volumes(mock_client)
+    assert volumes == mock_client.volumes.return_value['Volumes']
+    mock_log.info.assert_called_with("Found %s dangling volumes", count)
 
 
 def test_build_exclude_set():

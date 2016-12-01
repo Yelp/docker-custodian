@@ -74,6 +74,13 @@ def get_all_images(client):
     return images
 
 
+def get_dangling_volumes(client):
+    log.info("Getting dangling volumes")
+    volumes = client.volumes({'dangling': True})['Volumes']
+    log.info("Found %s dangling volumes", len(volumes))
+    return volumes
+
+
 def cleanup_images(client, max_image_age, dry_run, exclude_set):
     # re-fetch container list so that we don't include removed containers
     image_tags_in_use = set(
@@ -141,6 +148,25 @@ def remove_image(client, image_summary, min_date, dry_run):
         api_call(client.remove_image, image=image_tag)
 
 
+def remove_volume(client, volume, dry_run):
+    if not volume:
+        return
+
+    log.info("Removing volume %s" % volume['Name'])
+    if dry_run:
+        return
+
+    api_call(client.remove_volume, name=volume['Name'])
+
+
+def cleanup_volumes(client, dry_run):
+    dangling_volumes = get_dangling_volumes(client)
+
+    for volume in reversed(dangling_volumes):
+        log.info("Removing dangling volume %s", volume['Name'])
+        remove_volume(client, volume, dry_run)
+
+
 def api_call(func, **kwargs):
     try:
         return func(**kwargs)
@@ -192,6 +218,9 @@ def main():
             args.exclude_image_file)
         cleanup_images(client, args.max_image_age, args.dry_run, exclude_set)
 
+    if args.dangling_volumes:
+        cleanup_volumes(client, args.dry_run)
+
 
 def get_args(args=None):
     parser = argparse.ArgumentParser()
@@ -207,6 +236,10 @@ def get_args(args=None):
         help="Maxium age for an image. Images older than this age will be "
              "removed. Age can be specified in any pytimeparse supported "
              "format.")
+    parser.add_argument(
+        '--dangling-volumes',
+        action="store_true",
+        help="Dangling volumes will be removed.")
     parser.add_argument(
         '--dry-run', action="store_true",
         help="Only log actions, don't remove anything.")
