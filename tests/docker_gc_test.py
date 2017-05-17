@@ -164,6 +164,49 @@ def test_filter_images_in_use():
     assert list(actual) == expected
 
 
+def test_filter_images_in_use_by_id(mock_client, now):
+    mock_client._version = '1.21'
+    mock_client.containers.return_value = [
+        {'Id': 'abcd', 'ImageID': '1'},
+        {'Id': 'abbb', 'ImageID': '2'},
+    ]
+    mock_containers = [
+        {
+            'Id': 'abcd',
+            'Name': 'one',
+            'State': {
+                'Running': False,
+                'FinishedAt': '2014-01-01T01:01:01Z'
+            }
+        },
+        {
+            'Id': 'abbb',
+            'Name': 'two',
+            'State': {
+                'Running': True,
+                'FinishedAt': '2014-01-01T01:01:01Z'
+            }
+        }
+    ]
+    mock_client.inspect_container.side_effect = iter(mock_containers)
+    mock_client.images.return_value = [
+        {'Id': '1', 'Created': '2014-01-01T01:01:01Z'},
+        {'Id': '2', 'Created': '2014-01-01T01:01:01Z'},
+        {'Id': '3', 'Created': '2014-01-01T01:01:01Z'},
+        {'Id': '4', 'Created': '2014-01-01T01:01:01Z'},
+        {'Id': '5', 'Created': '2014-01-01T01:01:01Z'},
+        {'Id': '6', 'Created': '2014-01-01T01:01:01Z'},
+    ]
+    mock_client.inspect_image.side_effect = lambda image: {
+        'Id': image,
+        'Created': '2014-01-01T01:01:01Z'
+    }
+    docker_gc.cleanup_images(mock_client, now, False, set())
+    assert mock_client.remove_image.mock_calls == [
+        mock.call(image=id_) for id_ in ['6', '5', '4', '3']
+    ]
+
+
 def test_filter_excluded_images():
     exclude_set = set([
         'user/one:latest',

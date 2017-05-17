@@ -83,10 +83,16 @@ def get_dangling_volumes(client):
 
 def cleanup_images(client, max_image_age, dry_run, exclude_set):
     # re-fetch container list so that we don't include removed containers
-    image_tags_in_use = set(
-        container['Image'] for container in get_all_containers(client))
 
-    images = filter_images_in_use(get_all_images(client), image_tags_in_use)
+    containers = get_all_containers(client)
+    images = get_all_images(client)
+    if docker.utils.compare_version('1.21', client._version) < 0:
+        image_tags_in_use = {container['Image'] for container in containers}
+        images = filter_images_in_use(images, image_tags_in_use)
+    else:
+        # ImageID field was added in 1.21
+        image_ids_in_use = {container['ImageID'] for container in containers}
+        images = filter_images_in_use_by_id(images, image_ids_in_use)
     images = filter_excluded_images(images, exclude_set)
 
     for image_summary in reversed(list(images)):
@@ -116,6 +122,13 @@ def filter_images_in_use(images, image_tags_in_use):
 
     def image_not_in_use(image_summary):
         return not get_tag_set(image_summary) & image_tags_in_use
+
+    return filter(image_not_in_use, images)
+
+
+def filter_images_in_use_by_id(images, image_ids_in_use):
+    def image_not_in_use(image_summary):
+        return image_summary['Id'] not in image_ids_in_use
 
     return filter(image_not_in_use, images)
 

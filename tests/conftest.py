@@ -48,4 +48,6 @@ def later_time():
 
 @pytest.fixture
 def mock_client():
-    return mock.create_autospec(docker.Client)
+    client = mock.create_autospec(docker.Client)
+    client._version = '1.17'
+    return client
