@@ -48,6 +48,11 @@ Source
 
     pip install git+https://github.com/Yelp/docker-custodian.git#egg=docker_custodian
 
+If you are using the pip module of ansible:
+
+.. code:: sh
+
+    pip: name='git+https://github.com/Yelp/docker-custodian.git#egg=docker_custodian'
 
 dcgc
 ----
