@@ -5,6 +5,7 @@ except ImportError:
 
 from docker_custodian.docker_autostop import (
     build_container_matcher,
+    build_image_matcher,
     get_opts,
     has_been_running_since,
     main,
@@ -19,7 +20,7 @@ def test_stop_containers(mock_client, container, now):
     mock_client.inspect_container.return_value = container
 
     stop_containers(mock_client, now, matcher, False)
-    matcher.assert_called_once_with('container_name')
+    matcher.assert_called_once_with(container)
     mock_client.stop.assert_called_once_with(container['Id'])
 
 
@@ -33,10 +34,19 @@ def test_build_container_matcher():
     prefixes = ['one_', 'two_']
     matcher = build_container_matcher(prefixes)
 
-    assert matcher('one_container')
-    assert matcher('two_container')
-    assert not matcher('three_container')
-    assert not matcher('one')
+    assert matcher({'Name': 'one_container'})
+    assert matcher({'Name': 'two_container'})
+    assert not matcher({'Name': 'three_container'})
+    assert not matcher({'Name': 'one'})
+
+
+def test_build_image_matcher():
+    images = ['postgres', 'mysql']
+    matcher = build_image_matcher(images)
+    assert matcher({'Config': {'Image': 'postgres:9.6'}})
+    assert matcher({'Config': {'Image': 'mysql:latest'}})
+    assert not matcher({'Config': {'Image': 'not_postgres'}})
+    assert not matcher({'Config': {'Image': 'not_mysql'}})
 
 
 def test_has_been_running_since_true(container, later_time):
