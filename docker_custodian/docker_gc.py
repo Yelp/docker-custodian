@@ -76,9 +76,7 @@ def get_all_images(client):
 
 def get_dangling_volumes(client):
     log.info("Getting dangling volumes")
-    volumes = client.volumes({'dangling': True})['Volumes']
-    if volumes == None:
-        volumes = []
+    volumes = client.volumes({'dangling': True})['Volumes'] or []
     log.info("Found %s dangling volumes", len(volumes))
     return volumes
 
