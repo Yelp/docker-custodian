@@ -6,7 +6,7 @@ docker-custodian (0.7.0) lucid; urgency=low
 
 docker-custodian (0.6.1) lucid; urgency=low
 
-  * New release for pypi 
+  * New release for pypi
 
  -- kwa <kwa@kwa-MacBookPro>  Wed, 31 Aug 2016 09:49:37 -0700
 
@@ -25,7 +25,7 @@ docker-custodian (0.5.3) lucid; urgency=low
 
 docker-custodian (0.5.2) lucid; urgency=low
 
-  * Fixed bug where never started containers that are not old were getting removed 
+  * Fixed bug where never started containers that are not old were getting removed
 
  -- Semir Patel <spatel@yelp.com>  Tue, 15 Dec 2015 09:44:26 -0800
 
@@ -58,7 +58,7 @@ docker-custodian (0.3.2) lucid; urgency=low
 
 docker-custodian (0.3.1) lucid; urgency=low
 
-  * Fix broken commands 
+  * Fix broken commands
 
  -- Daniel Nephin <dnephin@yelp.com>  Mon, 09 Mar 2015 17:58:03 -0700
 
