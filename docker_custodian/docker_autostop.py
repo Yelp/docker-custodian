@@ -95,10 +95,6 @@ def get_opts(args=None):
     )
     opts = parser.parse_args(args=args)
 
-    if len(sys.argv) < 2:
-        parser.print_help()
-        exit(0)
-
     if not opts.prefix:
         parser.error("Running with no --prefix will match nothing.")
 

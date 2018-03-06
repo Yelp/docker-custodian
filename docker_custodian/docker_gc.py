@@ -269,10 +269,6 @@ def get_args(args=None):
         help="Path to a file which contains a list of images to exclude, one "
              "image tag per line.")
 
-    if len(sys.argv) < 2:
-        parser.print_help()
-        exit(0)
-
     return parser.parse_args(args=args)
 
 
