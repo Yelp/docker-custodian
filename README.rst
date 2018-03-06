@@ -92,6 +92,30 @@ You also can use basic pattern matching to exclude images with generic tags.
     user/repositoryB:?.?
     user/repositoryC-*:tag
 
+
+Prevent containers and associated images from being removed
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``dcgc`` also supports a container exclude list based on labels.  If there are
+stopped containers that you'd like to keep, then you can check the labels to
+prevent them from being removed.
+
+::
+
+    --exclude-container-label
+        Never remove containers that have the label key=value. =value can be
+        omitted and in that case only the key is checked. May be specified
+        more than once.
+
+You also can use basic pattern matching to exclude generic labels.
+
+.. code::
+
+    foo*
+    com.docker.compose.project=test*
+    com.docker*=*bar*
+
+
 dcstop
 ------
 

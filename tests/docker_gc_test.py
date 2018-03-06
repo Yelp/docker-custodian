@@ -51,22 +51,45 @@ def test_cleanup_containers(mock_client, now):
             'Name': 'one',
             'State': {
                 'Running': False,
-                'FinishedAt': '2014-01-01T01:01:01Z'
-            }
+                'FinishedAt': '2014-01-01T01:01:01Z',
+            },
         },
         {
             'Id': 'abbb',
             'Name': 'two',
             'State': {
                 'Running': True,
-                'FinishedAt': '2014-01-01T01:01:01Z'
-            }
-        }
+                'FinishedAt': '2014-01-01T01:01:01Z',
+            },
+        },
     ]
     mock_client.inspect_container.side_effect = iter(mock_containers)
-    docker_gc.cleanup_containers(mock_client, max_container_age, False)
+    docker_gc.cleanup_containers(mock_client, max_container_age, False, None)
     mock_client.remove_container.assert_called_once_with(container='abcd',
                                                          v=True)
+
+
+def test_filter_excluded_containers():
+    mock_containers = [
+        {'Labels': {'toot': ''}},
+        {'Labels': {'too': 'lol'}},
+        {'Labels': {'toots': 'lol'}},
+        {'Labels': {'foo': 'bar'}},
+    ]
+    result = docker_gc.filter_excluded_containers(mock_containers, None)
+    assert mock_containers == list(result)
+    exclude_labels = ['too', 'foo']
+    result = docker_gc.filter_excluded_containers(
+        mock_containers,
+        exclude_labels,
+    )
+    assert [mock_containers[0], mock_containers[2]] == list(result)
+    exclude_labels = ['too*=lol']
+    result = docker_gc.filter_excluded_containers(
+        mock_containers,
+        exclude_labels,
+    )
+    assert [mock_containers[0], mock_containers[3]] == list(result)
 
 
 def test_cleanup_images(mock_client, now):
