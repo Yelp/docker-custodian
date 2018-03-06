@@ -14,7 +14,7 @@ setup(
     include_package_data=True,
     install_requires=[
         'python-dateutil',
-        'docker-py >= 0.5',
+        'docker',
         'pytimeparse',
     ],
     license="Apache License 2.0",

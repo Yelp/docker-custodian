@@ -66,7 +66,7 @@ def main():
         stream=sys.stdout)
 
     opts = get_opts()
-    client = docker.Client(version='auto', timeout=opts.timeout)
+    client = docker.APIClient(version='auto', timeout=opts.timeout)
 
     matcher = build_container_matcher(opts.prefix)
     stop_containers(client, opts.max_run_time, matcher, opts.dry_run)

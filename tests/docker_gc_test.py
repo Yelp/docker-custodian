@@ -466,7 +466,7 @@ def test_build_exclude_set_empty():
 
 def test_main(mock_client):
     with mock.patch(
-            'docker_custodian.docker_gc.docker.Client',
+            'docker_custodian.docker_gc.docker.APIClient',
             return_value=mock_client):
 
         with mock.patch(
