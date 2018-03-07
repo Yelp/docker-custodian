@@ -14,6 +14,7 @@ import docker.errors
 import requests.exceptions
 
 from docker_custodian.args import timedelta_type
+from docker.utils import kwargs_from_env
 
 log = logging.getLogger(__name__)
 
@@ -220,7 +221,9 @@ def main():
         stream=sys.stdout)
 
     args = get_args()
-    client = docker.APIClient(version='auto', timeout=args.timeout)
+    client = docker.APIClient(version='auto',
+                              timeout=args.timeout,
+                              **kwargs_from_env())
 
     if args.max_container_age:
         cleanup_containers(client, args.max_container_age, args.dry_run)

@@ -13,6 +13,7 @@ import docker.errors
 import requests.exceptions
 
 from docker_custodian.args import timedelta_type
+from docker.utils import kwargs_from_env
 
 
 log = logging.getLogger(__name__)
@@ -66,7 +67,9 @@ def main():
         stream=sys.stdout)
 
     opts = get_opts()
-    client = docker.APIClient(version='auto', timeout=opts.timeout)
+    client = docker.APIClient(version='auto',
+                              timeout=opts.timeout,
+                              **kwargs_from_env())
 
     matcher = build_container_matcher(opts.prefix)
     stop_containers(client, opts.max_run_time, matcher, opts.dry_run)
