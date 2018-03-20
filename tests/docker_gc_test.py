@@ -78,13 +78,18 @@ def test_filter_excluded_containers():
     ]
     result = docker_gc.filter_excluded_containers(mock_containers, None)
     assert mock_containers == list(result)
-    exclude_labels = ['too', 'foo']
+    exclude_labels = [
+        docker_gc.ExcludeLabel(key='too', value=None),
+        docker_gc.ExcludeLabel(key='foo', value=None),
+    ]
     result = docker_gc.filter_excluded_containers(
         mock_containers,
         exclude_labels,
     )
     assert [mock_containers[0], mock_containers[2]] == list(result)
-    exclude_labels = ['too*=lol']
+    exclude_labels = [
+        docker_gc.ExcludeLabel(key='too*', value='lol'),
+    ]
     result = docker_gc.filter_excluded_containers(
         mock_containers,
         exclude_labels,
@@ -482,6 +487,19 @@ def test_build_exclude_set():
     assert exclude_set == expected
 
 
+def test_format_exclude_labels():
+    exclude_label_args = [
+        'voo*',
+        'doo=poo',
+    ]
+    expected = [
+        docker_gc.ExcludeLabel(key='voo*', value=None),
+        docker_gc.ExcludeLabel(key='doo', value='poo'),
+    ]
+    exclude_labels = docker_gc.format_exclude_labels(exclude_label_args)
+    assert expected == exclude_labels
+
+
 def test_build_exclude_set_empty():
     exclude_set = docker_gc.build_exclude_set(None, None)
     assert exclude_set == set()
@@ -500,5 +518,6 @@ def test_main(mock_client):
                 max_container_age=200,
                 exclude_image=[],
                 exclude_image_file=None,
+                exclude_container_label=[],
             )
             docker_gc.main()
