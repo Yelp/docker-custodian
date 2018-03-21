@@ -1,3 +1,9 @@
+docker-custodian (0.7.1) lucid; urgency=medium
+
+  * Release 0.7.1
+
+ -- Kyle Anderson <kwa@yelp.com>  Wed, 21 Mar 2018 15:26:16 -0700
+
 docker-custodian (0.7.0) lucid; urgency=low
 
   * Delete volumes along with containers

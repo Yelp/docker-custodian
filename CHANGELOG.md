@@ -1,7 +1,33 @@
 # Change Log
 
-## [0.6.1](https://github.com/yelp/docker-custodian/tree/0.6.1) (2016-08-31)
-[Full Changelog](https://github.com/yelp/docker-custodian/compare/v0.5.1...0.6.1)
+## [0.7.1](https://github.com/Yelp/docker-custodian/tree/0.7.1) (2018-03-21)
+[Full Changelog](https://github.com/Yelp/docker-custodian/compare/v0.6.1...0.7.1)
+
+**Implemented enhancements:**
+
+- Remove volumes when removing containers [\#36](https://github.com/Yelp/docker-custodian/pull/36) ([pauloconnor](https://github.com/pauloconnor))
+- Add patterns support for exclude-image-file [\#35](https://github.com/Yelp/docker-custodian/pull/35) ([vshlapakov](https://github.com/vshlapakov))
+
+**Fixed bugs:**
+
+- Fix broken filtering for images used by containers [\#43](https://github.com/Yelp/docker-custodian/pull/43) ([chekunkov](https://github.com/chekunkov))
+
+**Closed issues:**
+
+- docker-custodian crashing when cleaning up. [\#38](https://github.com/Yelp/docker-custodian/issues/38)
+- backports.ssl-match-hostname\>=3.5 error when running in Docker [\#37](https://github.com/Yelp/docker-custodian/issues/37)
+- Publish on PyPI? [\#10](https://github.com/Yelp/docker-custodian/issues/10)
+
+**Merged pull requests:**
+
+- Add --exclude-container-label argument to dcgc [\#47](https://github.com/Yelp/docker-custodian/pull/47) ([ATRAN2](https://github.com/ATRAN2))
+- Port to docker lib [\#46](https://github.com/Yelp/docker-custodian/pull/46) ([samiam](https://github.com/samiam))
+- Correctly handle empty dangling volumes [\#45](https://github.com/Yelp/docker-custodian/pull/45) ([samiam](https://github.com/samiam))
+- Remove dangling volumes [\#40](https://github.com/Yelp/docker-custodian/pull/40) ([ymilki](https://github.com/ymilki))
+- Revert docker-py version change [\#39](https://github.com/Yelp/docker-custodian/pull/39) ([pauloconnor](https://github.com/pauloconnor))
+
+## [v0.6.1](https://github.com/Yelp/docker-custodian/tree/v0.6.1) (2016-08-31)
+[Full Changelog](https://github.com/Yelp/docker-custodian/compare/v0.5.1...v0.6.1)
 
 **Closed issues:**
 
@@ -19,8 +45,8 @@
 - bump docker-py version from 1.4.0 to 1.7.2 [\#26](https://github.com/Yelp/docker-custodian/pull/26) ([oktopuz](https://github.com/oktopuz))
 - Don't remove recently created containers that were never used [\#23](https://github.com/Yelp/docker-custodian/pull/23) ([analogue](https://github.com/analogue))
 
-## [v0.5.1](https://github.com/yelp/docker-custodian/tree/v0.5.1) (2015-09-29)
-[Full Changelog](https://github.com/yelp/docker-custodian/compare/v0.4.0...v0.5.1)
+## [v0.5.1](https://github.com/Yelp/docker-custodian/tree/v0.5.1) (2015-09-29)
+[Full Changelog](https://github.com/Yelp/docker-custodian/compare/v0.4.0...v0.5.1)
 
 **Implemented enhancements:**
 
@@ -44,7 +70,7 @@
 - Support excluding some images from removal [\#6](https://github.com/Yelp/docker-custodian/pull/6) ([dnephin](https://github.com/dnephin))
 - Add .travis.yml [\#5](https://github.com/Yelp/docker-custodian/pull/5) ([dnephin](https://github.com/dnephin))
 
-## [v0.4.0](https://github.com/yelp/docker-custodian/tree/v0.4.0) (2015-07-08)
+## [v0.4.0](https://github.com/Yelp/docker-custodian/tree/v0.4.0) (2015-07-08)
 **Merged pull requests:**
 
 - Initial rebase of docker-custodian project [\#1](https://github.com/Yelp/docker-custodian/pull/1) ([dnephin](https://github.com/dnephin))
