@@ -13,6 +13,7 @@ import docker
 import docker.errors
 import requests.exceptions
 
+from collections import namedtuple
 from docker_custodian.args import timedelta_type
 from docker.utils import kwargs_from_env
 
@@ -22,15 +23,29 @@ log = logging.getLogger(__name__)
 # This seems to be something docker uses for a null/zero date
 YEAR_ZERO = "0001-01-01T00:00:00Z"
 
+ExcludeLabel = namedtuple('ExcludeLabel', ['key', 'value'])
 
-def cleanup_containers(client, max_container_age, dry_run):
+
+def cleanup_containers(
+    client,
+    max_container_age,
+    dry_run,
+    exclude_container_labels,
+):
     all_containers = get_all_containers(client)
-
-    for container_summary in reversed(all_containers):
-        container = api_call(client.inspect_container,
-                             container=container_summary['Id'])
-        if not container or not should_remove_container(container,
-                                                        max_container_age):
+    filtered_containers = filter_excluded_containers(
+        all_containers,
+        exclude_container_labels,
+    )
+    for container_summary in reversed(list(filtered_containers)):
+        container = api_call(
+            client.inspect_container,
+            container=container_summary['Id'],
+        )
+        if not container or not should_remove_container(
+            container,
+            max_container_age,
+        ):
             continue
 
         log.info("Removing container %s %s %s" % (
@@ -39,8 +54,44 @@ def cleanup_containers(client, max_container_age, dry_run):
             container['State']['FinishedAt']))
 
         if not dry_run:
-            api_call(client.remove_container, container=container['Id'],
-                     v=True)
+            api_call(
+                client.remove_container,
+                container=container['Id'],
+                v=True,
+            )
+
+
+def filter_excluded_containers(containers, exclude_container_labels):
+    if not exclude_container_labels:
+        return containers
+
+    def include_container(container):
+        if should_exclude_container_with_labels(
+            container,
+            exclude_container_labels,
+        ):
+            return False
+        return True
+    return filter(include_container, containers)
+
+
+def should_exclude_container_with_labels(container, exclude_container_labels):
+    for exclude_label in exclude_container_labels:
+        if exclude_label.value:
+            matching_keys = fnmatch.filter(
+                container['Labels'].keys(),
+                exclude_label.key,
+            )
+            label_values_to_check = [
+                container['Labels'][matching_key]
+                for matching_key in matching_keys
+            ]
+            if fnmatch.filter(label_values_to_check, exclude_label.value):
+                return True
+        else:
+            if fnmatch.filter(container['Labels'].keys(), exclude_label.key):
+                return True
+    return False
 
 
 def should_remove_container(container, min_date):
@@ -214,6 +265,24 @@ def build_exclude_set(image_tags, exclude_file):
     return exclude_set
 
 
+def format_exclude_labels(exclude_label_args):
+    exclude_labels = []
+    for exclude_label_arg in exclude_label_args:
+        split_exclude_label = exclude_label_arg.split('=', 1)
+        exclude_label_key = split_exclude_label[0]
+        if len(split_exclude_label) == 2:
+            exclude_label_value = split_exclude_label[1]
+        else:
+            exclude_label_value = None
+        exclude_labels.append(
+            ExcludeLabel(
+                key=exclude_label_key,
+                value=exclude_label_value,
+            )
+        )
+    return exclude_labels
+
+
 def main():
     logging.basicConfig(
         level=logging.INFO,
@@ -225,8 +294,17 @@ def main():
                               timeout=args.timeout,
                               **kwargs_from_env())
 
+    exclude_container_labels = format_exclude_labels(
+        args.exclude_container_label
+    )
+
     if args.max_container_age:
-        cleanup_containers(client, args.max_container_age, args.dry_run)
+        cleanup_containers(
+            client,
+            args.max_container_age,
+            args.dry_run,
+            exclude_container_labels,
+        )
 
     if args.max_image_age:
         exclude_set = build_exclude_set(
@@ -271,6 +349,10 @@ def get_args(args=None):
         type=argparse.FileType('r'),
         help="Path to a file which contains a list of images to exclude, one "
              "image tag per line.")
+    parser.add_argument(
+        '--exclude-container-label',
+        action='append', type=str, default=[],
+        help="Never remove containers with this label key or label key=value")
 
     return parser.parse_args(args=args)
 
