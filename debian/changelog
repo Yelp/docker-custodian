@@ -1,8 +1,8 @@
-docker-custodian (0.7.1ubuntu1) UNRELEASED; urgency=medium
+docker-custodian (0.7.2) lucid; urgency=medium
 
-  * Fix debian links
+  * Fix debian links and release 0.7.2
 
- -- Kyle Anderson <kwa@yelp.com>  Wed, 21 Mar 2018 15:37:47 -0700
+ -- Kyle Anderson <kwa@yelp.com>  Wed, 21 Mar 2018 15:48:42 -0700
 
 docker-custodian (0.7.1) lucid; urgency=medium
 
