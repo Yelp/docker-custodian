@@ -13,3 +13,9 @@ repos:
     - id: name-tests-test
     - id: requirements-txt-fixer
     - id: trailing-whitespace
+- repo: git://github.com/Yelp/detect-secrets
+  rev: 0.9.1
+  hooks:
+    - id: detect-secrets
+      args: ['--baseline', '.secrets.baseline']
+      exclude: tests/.*
