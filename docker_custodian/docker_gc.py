@@ -76,21 +76,25 @@ def filter_excluded_containers(containers, exclude_container_labels):
 
 
 def should_exclude_container_with_labels(container, exclude_container_labels):
-    for exclude_label in exclude_container_labels:
-        if exclude_label.value:
-            matching_keys = fnmatch.filter(
-                container['Labels'].keys(),
-                exclude_label.key,
-            )
-            label_values_to_check = [
-                container['Labels'][matching_key]
-                for matching_key in matching_keys
-            ]
-            if fnmatch.filter(label_values_to_check, exclude_label.value):
-                return True
-        else:
-            if fnmatch.filter(container['Labels'].keys(), exclude_label.key):
-                return True
+    if container['Labels']:
+        for exclude_label in exclude_container_labels:
+            if exclude_label.value:
+                matching_keys = fnmatch.filter(
+                    container['Labels'].keys(),
+                    exclude_label.key,
+                )
+                label_values_to_check = [
+                    container['Labels'][matching_key]
+                    for matching_key in matching_keys
+                ]
+                if fnmatch.filter(label_values_to_check, exclude_label.value):
+                    return True
+            else:
+                if fnmatch.filter(
+                    container['Labels'].keys(),
+                    exclude_label.key
+                ):
+                    return True
     return False
 
 

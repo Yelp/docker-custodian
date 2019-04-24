@@ -75,6 +75,7 @@ def test_filter_excluded_containers():
         {'Labels': {'too': 'lol'}},
         {'Labels': {'toots': 'lol'}},
         {'Labels': {'foo': 'bar'}},
+        {'Labels': None},
     ]
     result = docker_gc.filter_excluded_containers(mock_containers, None)
     assert mock_containers == list(result)
@@ -86,7 +87,11 @@ def test_filter_excluded_containers():
         mock_containers,
         exclude_labels,
     )
-    assert [mock_containers[0], mock_containers[2]] == list(result)
+    assert [
+        mock_containers[0],
+        mock_containers[2],
+        mock_containers[4]
+    ] == list(result)
     exclude_labels = [
         docker_gc.ExcludeLabel(key='too*', value='lol'),
     ]
@@ -94,7 +99,11 @@ def test_filter_excluded_containers():
         mock_containers,
         exclude_labels,
     )
-    assert [mock_containers[0], mock_containers[3]] == list(result)
+    assert [
+        mock_containers[0],
+        mock_containers[3],
+        mock_containers[4]
+    ] == list(result)
 
 
 def test_cleanup_images(mock_client, now):
