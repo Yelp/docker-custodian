@@ -1,3 +1,9 @@
+docker-custodian (0.7.3) lucid; urgency=medium
+
+  * Fix handling containers with null labels
+
+ -- Matthew Mead-Briggs <mmb@yelp.com>  Thu, 25 Apr 2019 03:43:55 -0700
+
 docker-custodian (0.7.2) lucid; urgency=medium
 
   * Fix debian links and release 0.7.2
