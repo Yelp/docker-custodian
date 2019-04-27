@@ -7,6 +7,7 @@ import argparse
 import fnmatch
 import logging
 import sys
+import time
 
 import dateutil.parser
 import docker
@@ -137,7 +138,13 @@ def get_dangling_volumes(client):
     return volumes
 
 
-def cleanup_images(client, max_image_age, dry_run, exclude_set):
+def cleanup_images(
+    client,
+    max_image_age,
+    recent_image_age,
+    dry_run,
+    exclude_set
+):
     # re-fetch container list so that we don't include removed containers
 
     containers = get_all_containers(client)
@@ -151,8 +158,29 @@ def cleanup_images(client, max_image_age, dry_run, exclude_set):
         images = filter_images_in_use_by_id(images, image_ids_in_use)
     images = filter_excluded_images(images, exclude_set)
 
+    if recent_image_age is not None:
+        images = without_recently_used_images(client, images, recent_image_age)
+
     for image_summary in reversed(list(images)):
         remove_image(client, image_summary, max_image_age, dry_run)
+
+
+def without_recently_used_images(client, images, recent_image_age):
+    exclude = set()
+    for event in client.events(since=recent_image_age,
+                               until=int(time.time()),
+                               decode=True):
+        status = event.get('status', '')
+        if status != 'create' and not status.startswith('exec_start'):
+            continue
+        image_ref = event.get('from')
+        if image_ref is None:
+            continue
+        exclude.add(image_ref)
+    return [
+        image for image in images
+        if exclude.intersection([image.get('Id')] + image.get('RepoTags', []))
+    ]
 
 
 def filter_excluded_images(images, exclude_set):
@@ -314,7 +342,13 @@ def main():
         exclude_set = build_exclude_set(
             args.exclude_image,
             args.exclude_image_file)
-        cleanup_images(client, args.max_image_age, args.dry_run, exclude_set)
+        cleanup_images(
+            client,
+            args.max_image_age,
+            args.recent_image_age,
+            args.dry_run,
+            exclude_set
+        )
 
     if args.dangling_volumes:
         cleanup_volumes(client, args.dry_run)
@@ -334,6 +368,10 @@ def get_args(args=None):
         help="Maxium age for an image. Images older than this age will be "
              "removed. Age can be specified in any pytimeparse supported "
              "format.")
+    parser.add_argument(
+        '--recent-image-age',
+        type=timedelta_type, default=None,
+        help="Images used within specified time interval will not be removed.")
     parser.add_argument(
         '--dangling-volumes',
         action="store_true",

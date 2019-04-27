@@ -124,10 +124,26 @@ def test_cleanup_images(mock_client, now):
     ]
     mock_client.inspect_image.side_effect = iter(mock_images)
 
-    docker_gc.cleanup_images(mock_client, max_image_age, False, set())
+    docker_gc.cleanup_images(mock_client, max_image_age, None, False, set())
     assert mock_client.remove_image.mock_calls == [
         mock.call(image=image['Id']) for image in reversed(images)
     ]
+
+
+def test_without_recently_used_images(mock_client, now):
+    images = [
+        dict(Id='gone'),
+        dict(Id='a'),
+        dict(RepoTags=['b'])
+    ]
+    mock_events = [
+        {'status': 'create', 'from': 'a'},
+        {'status': 'exec_start', 'from': 'b'}
+    ]
+    mock_client.events.return_value = mock_events
+    filtered_images = docker_gc.without_recently_used_images(
+        mock_client, images, 0)
+    assert filtered_images == images[1:]
 
 
 def test_cleanup_volumes(mock_client):
@@ -238,7 +254,7 @@ def test_filter_images_in_use_by_id(mock_client, now):
         'Id': image,
         'Created': '2014-01-01T01:01:01Z'
     }
-    docker_gc.cleanup_images(mock_client, now, False, set())
+    docker_gc.cleanup_images(mock_client, now, None, False, set())
     assert mock_client.remove_image.mock_calls == [
         mock.call(image=id_) for id_ in ['6', '5', '4', '3']
     ]
