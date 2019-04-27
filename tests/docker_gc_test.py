@@ -134,11 +134,13 @@ def test_without_recently_used_images(mock_client, now):
     images = [
         dict(Id='gone'),
         dict(Id='a'),
-        dict(RepoTags=['b'])
+        dict(RepoTags=['b']),
+        dict(RepoDigests=['c'])
     ]
     mock_events = [
         {'status': 'create', 'from': 'a'},
-        {'status': 'exec_start', 'from': 'b'}
+        {'status': 'exec_start', 'from': 'b'},
+        {'status': 'create', 'from': 'c'}
     ]
     mock_client.events.return_value = mock_events
     filtered_images = docker_gc.without_recently_used_images(

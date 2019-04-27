@@ -179,7 +179,11 @@ def without_recently_used_images(client, images, recent_image_age):
         exclude.add(image_ref)
     return [
         image for image in images
-        if exclude.intersection([image.get('Id')] + image.get('RepoTags', []))
+        if exclude.intersection(
+                [image.get('Id')] +
+                image.get('RepoTags', []) +
+                image.get('RepoDigests', [])
+        )
     ]
 
 
