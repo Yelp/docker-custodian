@@ -2,12 +2,14 @@
 # -*- makefile -*-
 
 export DH_OPTIONS
+PYTHON_BINARY := $(shell { command -v python3.4 || command -v python3.3 || command -v python2.7; } 2>/dev/null)
+PYTHON_PACKAGE := $(lastword $(subst /, ,${PYTHON_BINARY}))
 
 %:
 	dh $@ --with python-virtualenv
 
 override_dh_virtualenv:
-	dh_virtualenv --python python2.7
+	dh_virtualenv --python ${PYTHON_BINARY}
 
 # do not call `make clean` as part of packaging
 override_dh_auto_clean:
@@ -19,3 +21,6 @@ override_dh_auto_build:
 
 override_dh_auto_test:
 	true
+
+override_dh_gencontrol:
+	dh_gencontrol -- -Vpython:Depends="${PYTHON_PACKAGE}"
