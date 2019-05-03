@@ -375,7 +375,8 @@ def get_args(args=None):
     parser.add_argument(
         '--recent-image-age',
         type=timedelta_type, default=None,
-        help="Images used within specified time interval will not be removed.")
+        help="Images used within specified time interval will not be removed. "
+             "Age can be specified in any pytimeparse supported format.")
     parser.add_argument(
         '--dangling-volumes',
         action="store_true",
