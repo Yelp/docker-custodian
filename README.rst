@@ -41,12 +41,12 @@ Then install it
     dpkg -i ../docker-custodian_*.deb
 
 
-Source
-~~~~~~
+pypi.org
+~~~~~~~~
 
 .. code:: sh
 
-    pip install git+https://github.com/Yelp/docker-custodian.git#egg=docker_custodian
+    pip install docker-custodian
 
 
 dcgc
