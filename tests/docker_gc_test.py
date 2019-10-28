@@ -149,11 +149,65 @@ def test_cleanup_volumes(mock_client):
         'Warnings': None,
     }
 
-    docker_gc.cleanup_volumes(mock_client, False)
+    docker_gc.cleanup_volumes(mock_client, False, set())
     assert mock_client.remove_volume.mock_calls == [
         mock.call(name=volume['Name'])
-        for volume in reversed(volumes['Volumes'])
+        for volume in volumes['Volumes']
     ]
+
+
+def test_filter_cleanup_volumes(mock_client):
+    mock_client.volumes.return_value = {
+        'Volumes': [
+            {
+                'Mountpoint': 'unused',
+                'Labels': None,
+                'Driver': 'unused',
+                'Name': u'unused'
+            },
+            {
+                'Mountpoint': 'filtered',
+                'Labels': None,
+                'Driver': 'unused',
+                'Name': u'filtered'
+            },
+        ],
+        'Warnings': None,
+    }
+
+    docker_gc.cleanup_volumes(mock_client, False, set(['filtered']))
+    assert mock_client.remove_volume.mock_calls == [
+        mock.call(name='unused')
+    ]
+
+
+def test_filter_excluded_volumes(mock_client):
+    exclude_set = set(['filtered'])
+    volumes = [
+        {
+            'Mountpoint': 'unused',
+            'Labels': None,
+            'Driver': 'unused',
+            'Name': u'unused'
+        },
+        {
+            'Mountpoint': 'filtered',
+            'Labels': None,
+            'Driver': 'unused',
+            'Name': u'filtered'
+        },
+    ]
+    expected = [
+        {
+            'Mountpoint': 'unused',
+            'Labels': None,
+            'Driver': 'unused',
+            'Name': u'unused'
+        },
+    ]
+
+    actual = docker_gc.filter_excluded_volumes(volumes, exclude_set)
+    assert list(actual) == expected
 
 
 def test_filter_images_in_use():
@@ -527,6 +581,8 @@ def test_main(mock_client):
                 max_container_age=200,
                 exclude_image=[],
                 exclude_image_file=None,
+                exclude_volume=[],
+                exclude_volume_file=None,
                 exclude_container_label=[],
             )
             docker_gc.main()
