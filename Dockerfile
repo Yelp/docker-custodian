@@ -1,9 +1,9 @@
-FROM    alpine:3.2
-MAINTAINER Kyle Anderson <kwa@yelp.com>
+FROM python:3.9-alpine3.12
 
-RUN     apk add -U python py-pip
-ADD     requirements.txt /code/requirements.txt
-RUN     pip install -r /code/requirements.txt
-ADD     docker_custodian/ /code/docker_custodian/
-ADD     setup.py /code/
-RUN     pip install --no-deps -e /code
+COPY requirements.txt /code/requirements.txt
+RUN pip install -r /code/requirements.txt
+COPY docker_custodian/ /code/docker_custodian/
+COPY setup.py /code/
+RUN pip install --no-deps -e /code
+
+ENTRYPOINT ["dcgc"]

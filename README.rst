@@ -23,7 +23,7 @@ Container
     docker pull yelp/docker-custodian
     docker run -ti \
         -v /var/run/docker.sock:/var/run/docker.sock \
-        yelp/docker-custodian dcgc --help
+        yelp/docker-custodian --help
 
 Debian/Ubuntu package
 ~~~~~~~~~~~~~~~~~~~~~
