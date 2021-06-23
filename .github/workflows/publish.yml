@@ -1,0 +1,31 @@
+---
+name: Publish on PyPI
+
+"on":
+  push:
+    tags:
+      - v*
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+
+      - name: Install Python dependencies
+        run: pip install wheel
+
+      - name: Create a Wheel file and source distribution
+        run: python setup.py sdist bdist_wheel
+
+      - name: Publish distribution package to PyPI
+        uses: pypa/gh-action-pypi-publish@v1.2.2
+        with:
+          password: ${{ secrets.pypi_password }}
