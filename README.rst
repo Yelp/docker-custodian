@@ -1,8 +1,11 @@
 Docker Custodian
 ================
 
-.. image:: https://travis-ci.org/Yelp/docker-custodian.svg
-    :target: https://travis-ci.org/Yelp/docker-custodian
+.. |tests badge| image:: https://github.com/yelp/docker-custodian/actions/workflows/tests.yml/badge.svg
+.. |docker badge| image:: https://github.com/yelp/docker-custodian/actions/workflows/docker.yml/badge.svg
+.. |pypi badge| image:: https://github.com/yelp/docker-custodian/actions/workflows/publish.yml/badge.svg
+
+|tests badge| |docker badge| |pypi badge|
 
 Keep docker hosts tidy.
 
