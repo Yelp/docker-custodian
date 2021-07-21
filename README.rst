@@ -58,17 +58,21 @@ dcgc
 Remove old docker containers and docker images.
 
 ``dcgc`` will remove stopped containers and unused images that are older than
-"max age".  Running containers, and images which are used by a container are
-never removed.
+"max age" or images that have count of tags greater than a given threshold.
+Running containers, and images which are used by a container are never removed.
 
 Maximum age can be specificied with any format supported by
 `pytimeparse <https://github.com/wroberts/pytimeparse>`_.
+
+If max count of tags is specified - newer tags are kept and older are removed.
+If both max age and max count of tags is specified images are cleared if any of
+the limits is exceeded.
 
 Example:
 
 .. code:: sh
 
-    dcgc --max-container-age 3days --max-image-age 30days
+    dcgc --max-container-age 3days --max-image-age 30days --max-tags-count 5
 
 
 Prevent images from being removed

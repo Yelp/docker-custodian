@@ -1,3 +1,6 @@
+import datetime
+
+from dateutil import tz
 from six import StringIO
 import textwrap
 
@@ -7,6 +10,7 @@ try:
 except ImportError:
     import mock
 import requests.exceptions
+import pytest
 
 from docker_custodian import docker_gc
 
@@ -124,10 +128,60 @@ def test_cleanup_images(mock_client, now):
     ]
     mock_client.inspect_image.side_effect = iter(mock_images)
 
-    docker_gc.cleanup_images(mock_client, max_image_age, False, set())
+    docker_gc.cleanup_images(
+        mock_client, max_image_age, None, False, set())
     assert mock_client.remove_image.mock_calls == [
-        mock.call(image=image['Id']) for image in reversed(images)
+        mock.call(image=image['Id']) for image in images
     ]
+
+
+@pytest.mark.parametrize('max_image_age,expected_remove_calls', [
+    # First two cases image 'abce' cannot be removed because it has tag
+    # that points to repository 'user/two' for the first time.
+    (
+        None,
+        [mock.call(image=i) for i in ['user/two:aaaa', 'user/one:bbbb']]
+    ),
+    (
+        datetime.datetime(2014, 1, 1, 0, 0, tzinfo=tz.tzutc()),
+        [mock.call(image=i) for i in ['user/two:aaaa', 'user/one:bbbb']]
+    ),
+    # All images should be removed because max_image_age is greater than
+    # the age of all images.
+    (
+        datetime.datetime(2014, 2, 1, 0, 0, tzinfo=tz.tzutc()),
+        [mock.call(image=i) for i in ['user/one:latest', 'user/one:abcd',
+                                      'user/two:latest', 'user/one:efgh',
+                                      'user/two:aaaa', 'user/one:bbbb']]
+    ),
+])
+def test_cleanup_images_max_tags_count(mock_client,
+                                       max_image_age, expected_remove_calls):
+    mock_client.images.return_value = [
+        {'Id': 'abcd', 'RepoTags': ['user/one:latest', 'user/one:abcd']},
+        {'Id': 'abce', 'RepoTags': ['user/two:latest', 'user/one:efgh']},
+        {'Id': 'abcf', 'RepoTags': ['user/two:aaaa', 'user/one:bbbb']},
+    ]
+    mock_images = [
+        {
+            'Id': 'abcd',
+            'Created': '2014-01-01T01:01:01Z'
+        },
+        {
+            'Id': 'abce',
+            'Created': '2014-01-01T01:01:01Z'
+        },
+        {
+            'Id': 'abcf',
+            'Created': '2014-01-01T01:01:01Z'
+        },
+    ]
+    mock_client.inspect_image.side_effect = iter(mock_images)
+    max_tags_count = 1
+    docker_gc.cleanup_images(
+        mock_client, max_image_age, max_tags_count, False, set())
+    # Keep at least max_tags_count tags for each repository.
+    assert mock_client.remove_image.mock_calls == expected_remove_calls
 
 
 def test_cleanup_volumes(mock_client):
@@ -333,11 +387,15 @@ def test_is_image_old_false(image, later_time):
     assert not docker_gc.is_image_old(image, later_time)
 
 
+def test_is_image_old_none(image, later_time):
+    assert not docker_gc.is_image_old(image, None)
+
+
 def test_remove_image_no_tags(mock_client, image, now):
     image_id = 'abcd'
     image_summary = {'Id': image_id}
     mock_client.inspect_image.return_value = image
-    docker_gc.remove_image(mock_client, image_summary, now, False)
+    docker_gc.remove_image(mock_client, image_summary, now, False, False)
 
     mock_client.remove_image.assert_called_once_with(image=image_id)
 
@@ -346,7 +404,8 @@ def test_remove_image_new_image_not_removed(mock_client, image, later_time):
     image_id = 'abcd'
     image_summary = {'Id': image_id}
     mock_client.inspect_image.return_value = image
-    docker_gc.remove_image(mock_client, image_summary, later_time, False)
+    docker_gc.remove_image(
+        mock_client, image_summary, later_time, False, False)
 
     assert not mock_client.remove_image.mock_calls
 
@@ -359,7 +418,22 @@ def test_remove_image_with_tags(mock_client, image, now):
             'RepoTags': repo_tags
     }
     mock_client.inspect_image.return_value = image
-    docker_gc.remove_image(mock_client, image_summary, now, False)
+    docker_gc.remove_image(mock_client, image_summary, now, False, False)
+
+    assert mock_client.remove_image.mock_calls == [
+        mock.call(image=tag) for tag in repo_tags
+    ]
+
+
+def test_remove_image_exceeds_max_tag_count(mock_client, image, now):
+    image_id = 'abcd'
+    repo_tags = ['user/one:latest', 'user/one:12345']
+    image_summary = {
+        'Id': image_id,
+        'RepoTags': repo_tags
+    }
+    mock_client.inspect_image.return_value = image
+    docker_gc.remove_image(mock_client, image_summary, None, True, False)
 
     assert mock_client.remove_image.mock_calls == [
         mock.call(image=tag) for tag in repo_tags

@@ -4,6 +4,7 @@ Remove old docker containers and images that are no longer in use.
 
 """
 import argparse
+import collections
 import fnmatch
 import logging
 import sys
@@ -137,7 +138,8 @@ def get_dangling_volumes(client):
     return volumes
 
 
-def cleanup_images(client, max_image_age, dry_run, exclude_set):
+def cleanup_images(client, max_image_age, max_tags_count,
+                   dry_run, exclude_set):
     # re-fetch container list so that we don't include removed containers
 
     containers = get_all_containers(client)
@@ -151,8 +153,36 @@ def cleanup_images(client, max_image_age, dry_run, exclude_set):
         images = filter_images_in_use_by_id(images, image_ids_in_use)
     images = filter_excluded_images(images, exclude_set)
 
-    for image_summary in reversed(list(images)):
-        remove_image(client, image_summary, max_image_age, dry_run)
+    tags_counter = collections.Counter()
+    for image_summary in images:
+        exceeds_max_tags_count = check_exceeds_max_tags_count(
+            image_summary,
+            tags_counter,
+            max_tags_count)
+        remove_image(
+            client,
+            image_summary,
+            max_image_age,
+            exceeds_max_tags_count,
+            dry_run)
+
+
+def check_exceeds_max_tags_count(image_summary, tags_counter, max_tags_count):
+    """Check if tags count is exceeded for all repositories.
+
+    Updates tags_counter that keeps state for the current session.
+
+    """
+    image_tags = image_summary.get('RepoTags')
+    if max_tags_count is None or no_image_tags(image_tags):
+        return False
+    exceeds_max_tags_count = True
+    for tag in image_tags:
+        repo, _, _ = tag.rpartition(':')
+        tags_counter[repo] += 1
+        if tags_counter[repo] <= max_tags_count:
+            exceeds_max_tags_count = False
+    return exceeds_max_tags_count
 
 
 def filter_excluded_images(images, exclude_set):
@@ -173,7 +203,7 @@ def filter_images_in_use(images, image_tags_in_use):
         image_tags = image_summary.get('RepoTags')
         if no_image_tags(image_tags):
             # The repr of the image Id used by client.containers()
-            return set(['%s:latest' % image_summary['Id'][:12]])
+            return {'%s:latest' % image_summary['Id'][:12]}
         return set(image_tags)
 
     def image_not_in_use(image_summary):
@@ -190,16 +220,18 @@ def filter_images_in_use_by_id(images, image_ids_in_use):
 
 
 def is_image_old(image, min_date):
-    return dateutil.parser.parse(image['Created']) < min_date
+    return min_date and dateutil.parser.parse(image['Created']) < min_date
 
 
 def no_image_tags(image_tags):
     return not image_tags or image_tags == ['<none>:<none>']
 
 
-def remove_image(client, image_summary, min_date, dry_run):
+def remove_image(client, image_summary, min_date,
+                 exceeds_max_tags_count, dry_run):
     image = api_call(client.inspect_image, image=image_summary['Id'])
-    if not image or not is_image_old(image, min_date):
+    if not image or not (
+            exceeds_max_tags_count or is_image_old(image, min_date)):
         return
 
     log.info("Removing image %s" % format_image(image, image_summary))
@@ -310,11 +342,16 @@ def main():
             exclude_container_labels,
         )
 
-    if args.max_image_age:
+    if args.max_image_age or args.max_tags_count:
         exclude_set = build_exclude_set(
             args.exclude_image,
             args.exclude_image_file)
-        cleanup_images(client, args.max_image_age, args.dry_run, exclude_set)
+        cleanup_images(
+            client,
+            args.max_image_age,
+            args.max_tags_count,
+            args.dry_run,
+            exclude_set)
 
     if args.dangling_volumes:
         cleanup_volumes(client, args.dry_run)
@@ -331,9 +368,14 @@ def get_args(args=None):
     parser.add_argument(
         '--max-image-age',
         type=timedelta_type,
-        help="Maxium age for an image. Images older than this age will be "
+        help="Maximum age for an image. Images older than this age will be "
              "removed. Age can be specified in any pytimeparse supported "
              "format.")
+    parser.add_argument(
+        '--max-tags-count',
+        type=int,
+        help="Maximum number of tags to keep for an image. "
+             "Only the most recently added tags are kept.")
     parser.add_argument(
         '--dangling-volumes',
         action="store_true",
