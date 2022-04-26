@@ -3,11 +3,21 @@
 
 export DH_OPTIONS
 
+
+ifeq ($(shell (. /etc/lsb-release && dpkg --compare-versions $$DISTRIB_RELEASE ge "22.04" && echo yes || echo no)),yes)
+    python3_runtime = python3.10
+else
+    python3_runtime = python3.7
+endif
+
 %:
 	dh $@ --with python-virtualenv
 
+override_dh_gencontrol:
+	dh_gencontrol -- -VpythonRuntime:Depends="$(python3_runtime)"
+
 override_dh_virtualenv:
-	dh_virtualenv --python python2.7
+	dh_virtualenv --python $(python3_runtime) --extra-pip-arg --only-binary=:all:
 
 # do not call `make clean` as part of packaging
 override_dh_auto_clean:
