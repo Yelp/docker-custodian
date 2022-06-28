@@ -3,12 +3,7 @@
 
 export DH_OPTIONS
 
-
-ifeq ($(shell (. /etc/lsb-release && dpkg --compare-versions $$DISTRIB_RELEASE ge "22.04" && echo yes || echo no)),yes)
-    python3_runtime = python3.10
-else
-    python3_runtime = python3.7
-endif
+python3_runtime = python3.7
 
 %:
 	dh $@ --with python-virtualenv
