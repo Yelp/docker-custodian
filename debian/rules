@@ -3,13 +3,19 @@
 
 export DH_OPTIONS
 
-python3_runtime = python3.7
+ifeq ($(shell (. /etc/lsb-release && dpkg --compare-versions $$DISTRIB_RELEASE ge "22.04" && echo yes || echo no)),yes)
+	python3_depends = python3.7, python3.7-distutils
+	python3_runtime = python3.7
+else
+	python3_depends = python3.7
+	python3_runtime = python3.7
+endif
 
 %:
 	dh $@ --with python-virtualenv
 
 override_dh_gencontrol:
-	dh_gencontrol -- -VpythonRuntime:Depends="$(python3_runtime)"
+	dh_gencontrol -- -VpythonRuntime:Depends="$(python3_depends)"
 
 override_dh_virtualenv:
 	dh_virtualenv --python $(python3_runtime) --extra-pip-arg --only-binary=:all:
