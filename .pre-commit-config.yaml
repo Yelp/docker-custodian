@@ -1,6 +1,6 @@
 repos:
-- repo: git://github.com/pre-commit/pre-commit-hooks
-  rev: v2.2.1
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.3.0
   hooks:
     - id: check-added-large-files
     - id: check-docstring-first
@@ -13,8 +13,8 @@ repos:
     - id: name-tests-test
     - id: requirements-txt-fixer
     - id: trailing-whitespace
-- repo: git://github.com/Yelp/detect-secrets
-  rev: v0.12.2
+- repo: https://github.com/Yelp/detect-secrets
+  rev: v1.2.0
   hooks:
     - id: detect-secrets
       args: ['--baseline', '.secrets.baseline']
