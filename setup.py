@@ -10,6 +10,7 @@ setup(
     author='Daniel Nephin',
     author_email='dnephin@yelp.com',
     description='Keep docker hosts tidy.',
+    url='https://github.com/Yelp/docker-custodian',
     packages=find_packages(exclude=['tests*']),
     include_package_data=True,
     install_requires=[
