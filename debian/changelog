@@ -1,3 +1,11 @@
+docker-custodian (0.8.1) bionic; urgency=medium
+
+  * Drop python 3.6 support
+  * Upgrade pre-commit hooks
+  * Use python 3.7 on Jammy (22.04) too
+
+ -- Jason Perrin <jvperrin@yelp.com>  Tue, 28 Jun 2022 17:02:02 -0700
+
 docker-custodian (0.8.0) xenial; urgency=medium
 
   * Build for Python 3
