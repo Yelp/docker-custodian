@@ -1,3 +1,4 @@
+from callee import String, Regex
 from six import StringIO
 import textwrap
 
@@ -406,9 +407,7 @@ def test_api_call_with_api_error():
         docker_gc.api_call(func, image=image)
 
     func.assert_called_once_with(image="abcd")
-    mock_log.warn.assert_called_once_with(
-        'Error calling remove_image image=abcd '
-        '409 Client Error: Conflict ("failed")')
+    mock_log.warn.assert_called_once_with(String() & Regex('Error calling remove_image image=abcd 409 Client Error .*'))
 
 
 def days_as_seconds(num):

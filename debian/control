@@ -1,9 +1,9 @@
 Source: docker-custodian
 Maintainer: Daniel Nephin <dnephin@yelp.com>
 Build-Depends:
-    dh-virtualenv,
+  dh-virtualenv, python3 (>= 3.7) | python3.7
 
-Depends: python2.7
+Depends: ${pythonRuntime:Depends}
 Package: docker-custodian
 Architecture: any
 Description: Remove old Docker containers and images that are no longer in use
