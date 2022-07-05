@@ -15,6 +15,9 @@ def container():
         'Id': 'abcdabcdabcdabcd',
         'Created': '2013-12-20T17:00:00Z',
         'Name': '/container_name',
+        'Config': {
+            'Image': 'docker.io/test/image:1234',
+        },
         'State': {
             'Running': False,
             'FinishedAt': '2014-01-01T17:30:00Z',

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 Stop docker container that have been running longer than the max_run_time and
-match some prefix.
+match some prefix or image.
 """
 import argparse
 import logging
@@ -18,19 +18,18 @@ from docker.utils import kwargs_from_env
 
 log = logging.getLogger(__name__)
 
-
 def stop_containers(client, max_run_time, matcher, dry_run):
     for container_summary in client.containers():
         container = client.inspect_container(container_summary['Id'])
-        name = container['Name'].lstrip('/')
         if (
-            matcher(name) and
+            matcher(container) and
             has_been_running_since(container, max_run_time)
         ):
 
-            log.info("Stopping container %s %s: running since %s" % (
+            log.info("Stopping container %s %s (%s): running since %s" % (
                 container['Id'][:16],
-                name,
+                container['Name'].lstrip('/'),
+                container['Config']['Image'],
                 container['State']['StartedAt']))
 
             if not dry_run:
@@ -46,11 +45,28 @@ def stop_container(client, id):
         log.warn("Error stopping %s: %s" % (id, ae))
 
 
+def build_matcher(opts):
+    if opts.prefix:
+        return build_container_matcher(opts.prefix)
+    if opts.image:
+        return build_image_matcher(opts.image)
+
+
 def build_container_matcher(prefixes):
-    def matcher(name):
-        return any(name.startswith(prefix) for prefix in prefixes)
+    def matcher(container):
+        return any(
+            container.get('Name', '').lstrip('/').startswith(prefix)
+            for prefix in prefixes
+        )
     return matcher
 
+def build_image_matcher(images):
+    def matcher(container):
+        return any(
+            container.get('Config',{}).get('Image', '').startswith(image)
+            for image in images
+        )
+    return matcher
 
 def has_been_running_since(container, min_time):
     started_at = container.get('State', {}).get('StartedAt')
@@ -71,7 +87,8 @@ def main():
                               timeout=opts.timeout,
                               **kwargs_from_env())
 
-    matcher = build_container_matcher(opts.prefix)
+    matcher = build_matcher(opts)
+
     stop_containers(client, opts.max_run_time, matcher, opts.dry_run)
 
 
@@ -84,11 +101,6 @@ def get_opts(args=None):
         "be specified in any pytimeparse supported format."
     )
     parser.add_argument(
-        '--prefix', action="append", default=[],
-        help="Only stop containers which match one of the "
-             "prefix."
-    )
-    parser.add_argument(
         '--dry-run', action="store_true",
         help="Only log actions, don't stop anything."
     )
@@ -96,10 +108,16 @@ def get_opts(args=None):
         '-t', '--timeout', type=int, default=60,
         help="HTTP timeout in seconds for making docker API calls."
     )
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
+        '--prefix', action="append", default=[],
+        help="Only stop containers which match one of the prefix."
+    )
+    group.add_argument(
+        '--image', action="append", default=[],
+        help="Only stop containers that are from one of the given images."
+    )
     opts = parser.parse_args(args=args)
-
-    if not opts.prefix:
-        parser.error("Running with no --prefix will match nothing.")
 
     return opts
 
