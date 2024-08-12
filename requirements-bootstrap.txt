@@ -1,0 +1,3 @@
+pip==22.2
+poetry==1.2.2
+yelp-poetry-plugin-pypi==2.0.5

@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "docker-custodian"
+version = "0.8.1"
+description = "Keep docker hosts tidy."
+authors = ["Daniel Nephin"]
+[tool.poetry.dependencies]
+python = "^3.8"
+"backports.ssl-match-hostname" = "3.5.0.1"
+callee = "0.3.1"
+certifi = "2018.1.18"
+chardet = "3.0.4"
+docker = {version = "5.0.3", markers = "sys_platform == 'linux'"}
+docker-pycreds = "0.2.2"
+future = "0.16.0"
+idna = "2.6"
+ipaddress = "1.0.19"
+python-dateutil = "2.6.1"
+pytimeparse = "1.1.8"
+requests = "2.20.0"
+six = "1.11.0"
+urllib3 = "1.24.2"
+websocket-client = "0.57.0"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "*"
+pytest = {version = "*", markers = "python_version >= '3.7'"}
+
+[[tool.poetry.source]]
+name = "Yelp PyPI"
+url = "http://169.254.255.254:20641/simple/"
+default = true
+
+[tool.poetry.scripts]
+"dcstop" = "docker_custodian.docker_autostop:main"
+"dcgc" = "docker_custodian.docker_gc:main"
+[build-system]
+requires = ["poetry-core>=1.1.0"]
+build-backend = "poetry.core.masonry.api"
