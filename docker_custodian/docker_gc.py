@@ -298,6 +298,9 @@ def main():
                               timeout=args.timeout,
                               **kwargs_from_env())
 
+    if args.quiet:
+        log.setLevel(logging.WARNING)
+
     exclude_container_labels = format_exclude_labels(
         args.exclude_container_label
     )
@@ -322,6 +325,10 @@ def main():
 
 def get_args(args=None):
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-q', '--quiet',
+        action="store_true",
+        help="Quiet down program, only print warnings and errors")
     parser.add_argument(
         '--max-container-age',
         type=timedelta_type,
