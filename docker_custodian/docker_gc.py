@@ -228,10 +228,23 @@ def remove_volume(client, volume, dry_run):
     api_call(client.remove_volume, name=volume['Name'])
 
 
-def cleanup_volumes(client, dry_run):
+def filter_excluded_volumes(volumes, exclude_set):
+    def include_volume(volume):
+        image_name = volume['Name']
+        for exclude_pattern in exclude_set:
+            if fnmatch.fnmatch(image_name, exclude_pattern):
+                return False
+        return True
+
+    return filter(include_volume, volumes)
+
+
+def cleanup_volumes(client, dry_run, exclude_set):
     dangling_volumes = get_dangling_volumes(client)
 
-    for volume in reversed(dangling_volumes):
+    dangling_volumes = filter_excluded_volumes(dangling_volumes, exclude_set)
+
+    for volume in dangling_volumes:
         log.info("Removing dangling volume %s", volume['Name'])
         remove_volume(client, volume, dry_run)
 
@@ -317,7 +330,10 @@ def main():
         cleanup_images(client, args.max_image_age, args.dry_run, exclude_set)
 
     if args.dangling_volumes:
-        cleanup_volumes(client, args.dry_run)
+        exclude_set = build_exclude_set(
+            args.exclude_volume,
+            args.exclude_volume_file)
+        cleanup_volumes(client, args.dry_run, exclude_set)
 
 
 def get_args(args=None):
@@ -352,6 +368,15 @@ def get_args(args=None):
         '--exclude-image-file',
         type=argparse.FileType('r'),
         help="Path to a file which contains a list of images to exclude, one "
+             "image tag per line.")
+    parser.add_argument(
+        '--exclude-volume',
+        action='append',
+        help="Never remove volume with this name.")
+    parser.add_argument(
+        '--exclude-volume-file',
+        type=argparse.FileType('r'),
+        help="Path to a file which contains a list of volumes to exclude, one "
              "image tag per line.")
     parser.add_argument(
         '--exclude-container-label',
