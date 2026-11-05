@@ -1,5 +1,5 @@
 callee==0.3.1
-certifi==2024.7.4
+certifi==2026.10.23
 chardet==5.1.0
 docker==5.0.3
 docker-pycreds==0.2.2
