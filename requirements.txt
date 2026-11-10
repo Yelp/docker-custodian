@@ -4,7 +4,7 @@ chardet==5.1.0
 docker==5.0.3
 docker-pycreds==0.2.2
 future==0.16.0
-idna==2.6
+idna==3.15
 ipaddress==1.0.19
 python-dateutil==2.9.0
 pytimeparse==1.1.8
